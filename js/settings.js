@@ -12,6 +12,22 @@ app.registerExtension({
       tooltip: "Enter your Hugging Face token to enable downloads from gated repos.",
     },
     {
+      id: "downloader.civitai_token",
+      category: ["Hugging Face Download & Backup", "Tokens", "CivitAI API key"],
+      name: "CivitAI API key",
+      type: "text",
+      defaultValue: "",
+      tooltip: "Optional CivitAI API key for model lookups and downloads of models that require login.",
+    },
+    {
+      id: "downloader.civitai_search_enabled",
+      category: ["Hugging Face Download & Backup", "Auto download", "Search CivitAI for missing models"],
+      name: "Search CivitAI for missing models",
+      type: "boolean",
+      defaultValue: true,
+      tooltip: "When a missing model is not found on Hugging Face, also look it up on CivitAI.",
+    },
+    {
       id: "downloader.auto_open_missing_models_on_run",
       category: ["Hugging Face Download & Backup", "Auto download", "Auto-open on workflow-open and Run missing-model checks"],
       name: "Auto-open on workflow-open and Run missing-model checks",

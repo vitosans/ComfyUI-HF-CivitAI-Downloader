@@ -186,6 +186,41 @@ def get_token():
     return token if token else None
 
 
+CIVITAI_API = "https://civitai.com"
+ARCHIVE_API = "https://civitaiarchive.com"
+CIVITAI_HOSTS = {"civitai.com", "civitai.red", "civitai.green"}
+
+
+def _lora_manager_settings_path() -> str:
+    repo_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(repo_dir, "..", "comfyui-lora-manager", "settings.json")
+
+
+def get_civitai_token():
+    """
+    Load the CivitAI API key: Comfy setting, then CIVITAI_API_TOKEN env,
+    then the LoRA Manager custom node's settings.json (civitai_api_key).
+    """
+    settings = _load_comfy_settings_dict()
+    token = str(settings.get("downloader.civitai_token", "") or "").strip()
+    if not token:
+        token = os.getenv("CIVITAI_API_TOKEN", "").strip()
+    if not token:
+        try:
+            with open(_lora_manager_settings_path(), "r", encoding="utf-8") as f:
+                data = json.load(f)
+            token = str(data.get("civitai_api_key", "") or "").strip()
+        except Exception:
+            token = ""
+    return token if token else None
+
+
+def civitai_search_enabled() -> bool:
+    """Whether missing models may be looked up on CivitAI (default on)."""
+    settings = _load_comfy_settings_dict()
+    return bool(settings.get("downloader.civitai_search_enabled", True))
+
+
 def _safe_remove(path: str):
     try:
         os.remove(path)
