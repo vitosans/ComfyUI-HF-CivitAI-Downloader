@@ -527,5 +527,90 @@ class TestSearchMissing(unittest.TestCase):
         sm.assert_not_called()
 
 
+class _FakeResponse:
+    def __init__(self, body, url):
+        import io
+        self._io = io.BytesIO(body)
+        self._url = url
+        self.headers = {"Content-Length": str(len(body))}
+
+    def read(self, n=-1):
+        return self._io.read(n)
+
+    def geturl(self):
+        return self._url
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+class TestDirectDownload(unittest.TestCase):
+    def setUp(self):
+        import tempfile as _tf
+        self.tmp = _tf.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.requests = []
+        for p in (
+            patch.object(dl, "resolve_target_dir", return_value=self.tmp.name),
+            patch.object(dl, "is_path_within_allowed_roots", return_value=True),
+            patch.object(dl, "get_civitai_token", return_value="k"),
+        ):
+            p.start()
+            self.addCleanup(p.stop)
+
+    def _run(self, url, body=b"abc", **kw):
+        def fake_urlopen(req, timeout=None):
+            self.requests.append(req)
+            return _FakeResponse(body, url)
+        with patch.object(dl.urllib.request, "urlopen", side_effect=fake_urlopen):
+            return dl.run_download_url(url, "loras", sync=True, target_filename="m.safetensors", **kw)
+
+    def test_civitai_request_has_unredirected_auth(self):
+        self._run("https://civitai.com/api/download/models/1")
+        req = self.requests[0]
+        self.assertEqual(req.unredirected_hdrs.get("Authorization"), "Bearer k")
+        self.assertNotIn("Authorization", req.headers)
+
+    def test_www_civitai_host_gets_auth(self):
+        self._run("https://www.civitai.red/api/download/models/1")
+        self.assertEqual(self.requests[0].unredirected_hdrs.get("Authorization"), "Bearer k")
+
+    def test_non_civitai_has_no_auth(self):
+        for url in ("https://civitaiarchive.com/api/download/models/1", "https://cdn.example/x.safetensors"):
+            self.requests.clear()
+            self._run(url, overwrite=True)
+            req = self.requests[0]
+            self.assertNotIn("Authorization", req.unredirected_hdrs)
+            self.assertNotIn("Authorization", req.headers)
+
+    def test_sha256_mismatch_rejected(self):
+        with self.assertRaises(RuntimeError) as ctx:
+            self._run("https://cdn.example/x", expected_sha256="00" * 32)
+        self.assertIn("sha256", str(ctx.exception))
+        self.assertEqual(len(self.requests), 1)  # not retried
+        self.assertEqual(os.listdir(self.tmp.name), [])  # no dest, no .part
+
+    def test_sha256_match_kept(self):
+        import hashlib
+        digest = hashlib.sha256(b"abc").hexdigest().upper()
+        self._run("https://cdn.example/x", expected_sha256=digest)
+        self.assertTrue(os.path.exists(os.path.join(self.tmp.name, "m.safetensors")))
+
+    def test_invalid_sha256_means_no_check(self):
+        self._run("https://cdn.example/x", expected_sha256="not-a-hash")
+        self.assertTrue(os.path.exists(os.path.join(self.tmp.name, "m.safetensors")))
+
+    def test_civitai_401_gives_api_key_message(self):
+        import urllib.error
+        err = urllib.error.HTTPError("https://civitai.com/api/download/models/1", 401, "no", {}, None)
+        with patch.object(dl.urllib.request, "urlopen", side_effect=err):
+            with self.assertRaises(RuntimeError) as ctx:
+                dl.run_download_url("https://civitai.com/api/download/models/1", "loras", sync=True)
+        self.assertIn("CivitAI needs an API key", str(ctx.exception))
+
+
 if __name__ == "__main__":
     unittest.main()

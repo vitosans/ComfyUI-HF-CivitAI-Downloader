@@ -788,6 +788,16 @@ def run_download(parsed_data: dict,
         raise RuntimeError(error_msg)
 
 
+CIVITAI_AUTH_MESSAGE = (
+    "CivitAI needs an API key for this file \u2014 add it in Settings \u2192 "
+    "Hugging Face Download & Backup \u2192 CivitAI API key"
+)
+
+
+class _DownloadRejected(RuntimeError):
+    """Non-retryable direct-download failure whose message is shown verbatim."""
+
+
 def run_download_url(url: str,
                      final_folder: str,
                      sync: bool = False,
@@ -796,7 +806,8 @@ def run_download_url(url: str,
                      status_cb: Optional[Callable[[str], None]] = None,
                      progress_cb: Optional[Callable[[dict], None]] = None,
                      cancel_check: Optional[Callable[[], bool]] = None,
-                     max_retries: int = 3) -> tuple:
+                     max_retries: int = 3,
+                     expected_sha256: Optional[str] = None) -> tuple:
     """
     Download a single file from a direct HTTP(S) URL into models/<final_folder>.
     Uses streamed writes with retry/backoff, supports cancellation, and writes atomically.
@@ -815,6 +826,16 @@ def run_download_url(url: str,
         "Accept": "*/*",
     }
 
+    expected_hash = str(expected_sha256 or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+        expected_hash = ""
+
+    host = (parsed_url.hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    is_civitai = host in CIVITAI_HOSTS
+    civitai_token = get_civitai_token() if is_civitai else ""
+
     retry_count = max(0, int(max_retries))
     last_error = None
 
@@ -831,6 +852,9 @@ def run_download_url(url: str,
                 status_cb("downloading")
 
             request = urllib.request.Request(raw_url, headers=request_headers, method="GET")
+            if civitai_token:
+                # Unredirected: never forwarded to CDN hosts after a redirect.
+                request.add_unredirected_header("Authorization", f"Bearer {civitai_token}")
             with urllib.request.urlopen(request, timeout=60) as response:
                 final_url = str(getattr(response, "geturl", lambda: raw_url)() or raw_url)
                 headers = getattr(response, "headers", {})
@@ -884,6 +908,7 @@ def run_download_url(url: str,
                 last_progress_emit = 0.0
                 ema_speed = None
                 chunk_size = 8 * 1024 * 1024
+                hasher = hashlib.sha256() if expected_hash else None
 
                 with open(temp_path, "wb") as out:
                     while True:
@@ -893,6 +918,8 @@ def run_download_url(url: str,
                         if not chunk:
                             break
                         out.write(chunk)
+                        if hasher:
+                            hasher.update(chunk)
                         downloaded_bytes += len(chunk)
 
                         now = time.time()
@@ -929,6 +956,9 @@ def run_download_url(url: str,
                         f"Incomplete download (expected {content_length} bytes, got {downloaded_bytes} bytes)"
                     )
 
+                if hasher and hasher.hexdigest() != expected_hash:
+                    raise _DownloadRejected("Downloaded file failed sha256 check")
+
                 if status_cb:
                     status_cb("finalizing")
                 os.replace(temp_path, dest_path)
@@ -956,9 +986,16 @@ def run_download_url(url: str,
             cancel_msg = "Download cancelled"
             print("[DEBUG]", cancel_msg)
             return (cancel_msg, "") if sync else ("", "")
+        except _DownloadRejected:
+            if temp_path:
+                _safe_remove(temp_path)
+            raise
         except Exception as e:
             if temp_path:
                 _safe_remove(temp_path)
+            if (is_civitai and isinstance(e, urllib.error.HTTPError)
+                    and int(getattr(e, "code", 0) or 0) in (401, 403)):
+                raise _DownloadRejected(CIVITAI_AUTH_MESSAGE) from e
             last_error = e
             if attempt >= retry_count or not _is_retryable_url_error(e):
                 break

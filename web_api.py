@@ -2094,6 +2094,7 @@ def _download_worker():
                     status_cb=direct_status_cb,
                     progress_cb=direct_progress_cb,
                     cancel_check=lambda: _is_cancel_requested(download_id),
+                    expected_sha256=item.get("sha256") or None,
                 )
                 if _is_cancel_requested(download_id):
                     try:
@@ -2646,6 +2647,7 @@ async def install_models(request):
                         sync=True,
                         overwrite=overwrite,
                         target_filename=target_filename,
+                        expected_sha256=model.get("sha256") or None,
                     )
                 results.append({"filename": filename, "status": "success", "path": path, "message": msg})
                 
