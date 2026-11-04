@@ -1,0 +1,35 @@
+{
+ "results": [
+  {
+   "id": "f3255971",
+   "name": "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+   "type": "LORA",
+   "kind": "file",
+   "is_nsfw": false,
+   "download_count": 34,
+   "url": "/sha256/7b9c56858a518f9fbed261aa8c535d3bb409fc8ecf441dad780902703c1ed454",
+   "base_model": "Krea 2",
+   "is_deleted": true,
+   "created_at": 1790668819,
+   "username": "troylegoceo81746",
+   "deleted_at": 1790686820,
+   "platform": "civitai"
+  },
+  {
+   "id": "f3255900",
+   "name": "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+   "type": "LORA",
+   "kind": "file",
+   "is_nsfw": false,
+   "download_count": 17,
+   "url": "/sha256/7b9c56858a518f9fbed261aa8c535d3bb409fc8ecf441dad780902703c1ed454",
+   "base_model": "Krea 2",
+   "is_deleted": true,
+   "created_at": 1790668819,
+   "username": "troylegoceo81746",
+   "deleted_at": 1790686820,
+   "platform": "civitai"
+  }
+ ],
+ "total_hits": 2
+}

@@ -1,0 +1,618 @@
+{
+ "files": [
+  {
+   "filename": "moodyKrea2MixV9IsHere_v80BF16FP8_int8.safetensors",
+   "url": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=int8",
+   "source": "civitai",
+   "model_id": "2731187",
+   "model_version_id": "3327123",
+   "deletedAt": null,
+   "is_gated": false,
+   "is_paid": false
+  },
+  {
+   "filename": "moodyKrea2MixV9IsHere_v80_int8.safetensors",
+   "url": "https://civitai.com/api/download/models/3327244",
+   "source": "civitai",
+   "model_id": "2731187",
+   "model_version_id": "3327244",
+   "deletedAt": null,
+   "is_gated": false,
+   "is_paid": false
+  },
+  {
+   "filename": "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+   "url": "https://civitai.com/api/download/models/3367859?type=Other&format=SafeTensor&fp=int8",
+   "source": "civitai",
+   "model_id": "2971887",
+   "model_version_id": "3367859",
+   "deletedAt": "2026-09-29T13:00:19.831Z",
+   "is_gated": false,
+   "is_paid": false
+  },
+  {
+   "filename": "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+   "url": "https://civitai.com/api/download/models/3367885?type=Model&format=SafeTensor&fp=int8",
+   "source": "civitai",
+   "model_id": "2971887",
+   "model_version_id": "3367885",
+   "deletedAt": "2026-09-29T13:00:19.831Z",
+   "is_gated": false,
+   "is_paid": false
+  },
+  {
+   "filename": "Krea2-Moody-MixUncensoredV8FREEV8_v80_int8.safetensors",
+   "url": "https://huggingface.co/sendinn/ComfyUI_Res/resolve/main/diffusion_models/krea2/Krea2-Moody-MixUncensoredV8FREEV8_v80_int8.safetensors",
+   "source": "huggingface",
+   "model_id": null,
+   "model_version_id": null,
+   "deletedAt": null,
+   "is_gated": false,
+   "is_paid": false
+  },
+  {
+   "filename": "moodyKrea2Mix_v80_int8.safetensors",
+   "url": "https://huggingface.co/dragonmage117/moodyKrea2Mix_v80_int8.safetensors/resolve/main/moodyKrea2Mix_v80_int8.safetensors",
+   "source": "huggingface",
+   "model_id": null,
+   "model_version_id": null,
+   "deletedAt": null,
+   "is_gated": false,
+   "is_paid": false
+  },
+  {
+   "filename": "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+   "url": "https://huggingface.co/SicariusSicariiStuff/Krea-2_Models_Collection/resolve/main/Checkpoints/moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+   "source": "huggingface",
+   "model_id": null,
+   "model_version_id": null,
+   "deletedAt": null,
+   "is_gated": false,
+   "is_paid": false
+  },
+  {
+   "filename": "int8.safetensors",
+   "url": "https://huggingface.co/doanh2324/krea2/resolve/main/int8.safetensors",
+   "source": "huggingface",
+   "model_id": null,
+   "model_version_id": null,
+   "deletedAt": null,
+   "is_gated": false,
+   "is_paid": false
+  }
+ ],
+ "model": {
+  "id": 2731187,
+  "name": "Moody Krea 2 Mix - V9 is here - V8SE Free免费!",
+  "type": "Checkpoint",
+  "username": "catlover1937",
+  "downloadCount": 123132,
+  "favoriteCount": 0,
+  "commentCount": 341,
+  "ratingCount": 0,
+  "rating": 0,
+  "is_nsfw": true,
+  "nsfw_level": 61,
+  "createdAt": "2026-06-26T04:00:01.653Z",
+  "updatedAt": "2026-11-04T00:05:37.587Z",
+  "deletedAt": null,
+  "creator_id": "catlover1937",
+  "creator_username": "catlover1937",
+  "creator_name": "catlover1937",
+  "creator_url": "/users/catlover1937",
+  "versions": [
+   {
+    "id": 3428211,
+    "name": "V9.1 BF16 & FP8",
+    "created_at": "2026-10-25T10:00:11.919Z",
+    "url": "/models/2731187?modelVersionId=3428211"
+   },
+   {
+    "id": 3427699,
+    "name": "V9.1 Feat. PornmasterV4",
+    "created_at": "2026-10-25T10:00:11.919Z",
+    "url": "/models/2731187?modelVersionId=3427699"
+   },
+   {
+    "id": 3387524,
+    "name": "Gothic 哥特COS风 BF16 & FP8",
+    "created_at": "2026-10-07T09:07:15.060Z",
+    "url": "/models/2731187?modelVersionId=3387524"
+   },
+   {
+    "id": 3387411,
+    "name": "Gothic哥特COS风 Halloween Sp",
+    "created_at": "2026-10-07T09:07:15.060Z",
+    "url": "/models/2731187?modelVersionId=3387411"
+   },
+   {
+    "id": 3353829,
+    "name": "V8SE 古风萌妹 💙⚡️bluebuzz",
+    "created_at": "2026-09-24T09:00:24.339Z",
+    "url": "/models/2731187?modelVersionId=3353829"
+   },
+   {
+    "id": 3353325,
+    "name": "V8SE BF16 & FP8",
+    "created_at": "2026-09-24T09:00:24.339Z",
+    "url": "/models/2731187?modelVersionId=3353325"
+   },
+   {
+    "id": 3327244,
+    "name": "V8.0",
+    "created_at": "2026-09-15T01:48:38.128Z",
+    "url": "/models/2731187?modelVersionId=3327244"
+   },
+   {
+    "id": 3327123,
+    "name": "V8.0 BF16 & FP8",
+    "created_at": "2026-09-15T01:48:38.128Z",
+    "url": "/models/2731187?modelVersionId=3327123"
+   },
+   {
+    "id": 3261440,
+    "name": "Premium 臻享版",
+    "created_at": "2026-08-27T09:01:26.862Z",
+    "url": "/models/2731187?modelVersionId=3261440"
+   },
+   {
+    "id": 3223911,
+    "name": "V7SE BF16 反差萌妹TYJR Vol2",
+    "created_at": "2026-08-18T08:00:27.903Z",
+    "url": "/models/2731187?modelVersionId=3223911"
+   },
+   {
+    "id": 3223899,
+    "name": "V7SE 反差萌妹TYJR Vol2",
+    "created_at": "2026-08-18T08:00:27.903Z",
+    "url": "/models/2731187?modelVersionId=3223899"
+   },
+   {
+    "id": 3209040,
+    "name": "V7.0 BF16",
+    "created_at": "2026-08-10T17:00:06.358Z",
+    "url": "/models/2731187?modelVersionId=3209040"
+   },
+   {
+    "id": 3209007,
+    "name": "V7.0",
+    "created_at": "2026-08-10T17:00:06.347Z",
+    "url": "/models/2731187?modelVersionId=3209007"
+   },
+   {
+    "id": 3193397,
+    "name": "V6.0 BF16",
+    "created_at": "2026-08-03T10:00:21.751Z",
+    "url": "/models/2731187?modelVersionId=3193397"
+   },
+   {
+    "id": 3193386,
+    "name": "V6.0",
+    "created_at": "2026-08-03T10:00:21.736Z",
+    "url": "/models/2731187?modelVersionId=3193386"
+   },
+   {
+    "id": 3190797,
+    "name": "V6SE: Asian Fever 4K BF16",
+    "created_at": "2026-08-02T10:00:06.459Z",
+    "url": "/models/2731187?modelVersionId=3190797"
+   },
+   {
+    "id": 3190711,
+    "name": "V6SE: Asian Fever 4K 东方细致",
+    "created_at": "2026-08-02T10:00:06.459Z",
+    "url": "/models/2731187?modelVersionId=3190711"
+   },
+   {
+    "id": 3154820,
+    "name": "v5.0 Converted FP8",
+    "created_at": "2026-07-24T10:00:19.779Z",
+    "url": "/models/2731187?modelVersionId=3154820"
+   },
+   {
+    "id": 3152227,
+    "name": "V5.0 BF16",
+    "created_at": "2026-07-24T10:00:19.779Z",
+    "url": "/models/2731187?modelVersionId=3152227"
+   },
+   {
+    "id": 3151928,
+    "name": "V5.0",
+    "created_at": "2026-07-22T00:00:13.063Z",
+    "url": "/models/2731187?modelVersionId=3151928"
+   },
+   {
+    "id": 3137978,
+    "name": "V4SE: CUTIE Converted FP8",
+    "created_at": "2026-07-18T09:00:21.973Z",
+    "url": "/models/2731187?modelVersionId=3137978"
+   },
+   {
+    "id": 3137863,
+    "name": "V4SE: CUTIE BF16",
+    "created_at": "2026-07-17T09:00:03.797Z",
+    "url": "/models/2731187?modelVersionId=3137863"
+   },
+   {
+    "id": 3137861,
+    "name": "V4SE: CUTIE INT8",
+    "created_at": "2026-07-17T09:00:03.797Z",
+    "url": "/models/2731187?modelVersionId=3137861"
+   },
+   {
+    "id": 3137849,
+    "name": "V4SE: CUTIE 反差萌妹版",
+    "created_at": "2026-07-17T09:00:03.797Z",
+    "url": "/models/2731187?modelVersionId=3137849"
+   },
+   {
+    "id": 3134403,
+    "name": "V4.0 Converted FP8",
+    "created_at": "2026-07-16T09:00:14.531Z",
+    "url": "/models/2731187?modelVersionId=3134403"
+   },
+   {
+    "id": 3118002,
+    "name": "V4.0 BF16",
+    "created_at": "2026-07-11T04:33:47.398Z",
+    "url": "/models/2731187?modelVersionId=3118002"
+   },
+   {
+    "id": 3117965,
+    "name": "V4.0 INT8 CONVROT",
+    "created_at": "2026-07-11T04:33:47.398Z",
+    "url": "/models/2731187?modelVersionId=3117965"
+   },
+   {
+    "id": 3117958,
+    "name": "V4.0",
+    "created_at": "2026-07-11T03:08:37.721Z",
+    "url": "/models/2731187?modelVersionId=3117958"
+   },
+   {
+    "id": 3106461,
+    "name": "V3.0 INT8 CONVROT",
+    "created_at": "2026-07-07T12:00:13.571Z",
+    "url": "/models/2731187?modelVersionId=3106461"
+   },
+   {
+    "id": 3100467,
+    "name": "V3.0 BF16",
+    "created_at": "2026-07-06T08:00:22.772Z",
+    "url": "/models/2731187?modelVersionId=3100467"
+   },
+   {
+    "id": 3100032,
+    "name": "V3.0",
+    "created_at": "2026-07-06T08:00:22.772Z",
+    "url": "/models/2731187?modelVersionId=3100032"
+   },
+   {
+    "id": 3097059,
+    "name": "V3SE: TYJR 有料萌妹版",
+    "created_at": "2026-07-04T10:00:04.673Z",
+    "url": "/models/2731187?modelVersionId=3097059"
+   },
+   {
+    "id": 3087281,
+    "name": "v2.0",
+    "created_at": "2026-07-01T10:00:03.403Z",
+    "url": "/models/2731187?modelVersionId=3087281"
+   },
+   {
+    "id": 3084048,
+    "name": "V2SE:Oriental Edition 萌妹版",
+    "created_at": "2026-06-30T11:00:28.184Z",
+    "url": "/models/2731187?modelVersionId=3084048"
+   },
+   {
+    "id": 3070525,
+    "name": "v1.0",
+    "created_at": "2026-06-26T04:00:02.276Z",
+    "url": "/models/2731187?modelVersionId=3070525"
+   }
+  ],
+  "version": {
+   "id": 3327123,
+   "modelId": 2731187,
+   "name": "V8.0 BF16 & FP8",
+   "baseModel": "Krea 2",
+   "downloadCount": 173,
+   "ratingCount": 0,
+   "rating": 0,
+   "is_nsfw": true,
+   "nsfw_level": 60,
+   "createdAt": "2026-09-15T01:48:38.128Z",
+   "updatedAt": "2026-11-04T00:05:37.587Z",
+   "deletedAt": null,
+   "baseModelType": "Standard",
+   "favorite_count": 0,
+   "files": [
+    {
+     "id": 3213090,
+     "name": "moodyKrea2MixV9IsHere_v80BF16FP8_int8.safetensors",
+     "type": "Diffusion Model",
+     "sizeKB": 13466100.9609375,
+     "downloadUrl": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=int8",
+     "modelId": 2731187,
+     "modelName": "Moody Krea 2 Mix - V9 is here - V8SE Free免费!",
+     "modelVersionId": 3327123,
+     "is_nsfw": true,
+     "nsfw_level": 60,
+     "sha256": "7b9c56858a518f9fbed261aa8c535d3bb409fc8ecf441dad780902703c1ed454",
+     "createdAt": "2026-09-15T01:48:39.317Z",
+     "updatedAt": "2026-11-04T00:05:40.308Z",
+     "is_primary": false,
+     "mirrors": [
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80BF16FP8_int8.safetensors",
+       "url": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=int8",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327123",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80_int8.safetensors",
+       "url": "https://civitai.com/api/download/models/3327244",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327244",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+       "url": "https://civitai.com/api/download/models/3367859?type=Other&format=SafeTensor&fp=int8",
+       "source": "civitai",
+       "model_id": "2971887",
+       "model_version_id": "3367859",
+       "deletedAt": "2026-09-29T13:00:19.831Z",
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+       "url": "https://civitai.com/api/download/models/3367885?type=Model&format=SafeTensor&fp=int8",
+       "source": "civitai",
+       "model_id": "2971887",
+       "model_version_id": "3367885",
+       "deletedAt": "2026-09-29T13:00:19.831Z",
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "Krea2-Moody-MixUncensoredV8FREEV8_v80_int8.safetensors",
+       "url": "https://huggingface.co/sendinn/ComfyUI_Res/resolve/main/diffusion_models/krea2/Krea2-Moody-MixUncensoredV8FREEV8_v80_int8.safetensors",
+       "source": "huggingface",
+       "model_id": null,
+       "model_version_id": null,
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "moodyKrea2Mix_v80_int8.safetensors",
+       "url": "https://huggingface.co/dragonmage117/moodyKrea2Mix_v80_int8.safetensors/resolve/main/moodyKrea2Mix_v80_int8.safetensors",
+       "source": "huggingface",
+       "model_id": null,
+       "model_version_id": null,
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+       "url": "https://huggingface.co/SicariusSicariiStuff/Krea-2_Models_Collection/resolve/main/Checkpoints/moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors",
+       "source": "huggingface",
+       "model_id": null,
+       "model_version_id": null,
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "int8.safetensors",
+       "url": "https://huggingface.co/doanh2324/krea2/resolve/main/int8.safetensors",
+       "source": "huggingface",
+       "model_id": null,
+       "model_version_id": null,
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      }
+     ],
+     "deleted_at": null
+    },
+    {
+     "id": 3213036,
+     "name": "moodyKrea2MixV9IsHere_v80BF16FP8_nvfp4.safetensors",
+     "type": "Diffusion Model",
+     "sizeKB": 8119118.6015625,
+     "downloadUrl": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=nvfp4",
+     "modelId": 2731187,
+     "modelName": "Moody Krea 2 Mix - V9 is here - V8SE Free免费!",
+     "modelVersionId": 3327123,
+     "is_nsfw": true,
+     "nsfw_level": 60,
+     "sha256": "45b8d5f7c7df531e2489f6f08926de4bcb627044fde460c664a89522db827383",
+     "createdAt": "2026-09-15T01:48:39.317Z",
+     "updatedAt": "2026-11-04T00:05:40.308Z",
+     "is_primary": false,
+     "mirrors": [
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80_nvfp4.safetensors",
+       "url": "https://civitai.com/api/download/models/3327244?type=Model&format=SafeTensor&fp=nvfp4",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327244",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80BF16FP8_nvfp4.safetensors",
+       "url": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=nvfp4",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327123",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      }
+     ],
+     "deleted_at": null
+    },
+    {
+     "id": 3213091,
+     "name": "moodyKrea2MixV9IsHere_v80BF16FP8_fp8Scaled.safetensors",
+     "type": "Diffusion Model",
+     "sizeKB": 12833759.2890625,
+     "downloadUrl": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=fp8_scaled",
+     "modelId": 2731187,
+     "modelName": "Moody Krea 2 Mix - V9 is here - V8SE Free免费!",
+     "modelVersionId": 3327123,
+     "is_nsfw": true,
+     "nsfw_level": 60,
+     "sha256": "8a3d656f4b39be45c0dbcaecc84251f296cb83c337596c1f4e7dce04b879f30a",
+     "createdAt": "2026-09-15T01:48:39.317Z",
+     "updatedAt": "2026-11-04T00:05:40.308Z",
+     "is_primary": false,
+     "mirrors": [
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80BF16FP8_fp8Scaled.safetensors",
+       "url": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=fp8_scaled",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327123",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      }
+     ],
+     "deleted_at": null
+    },
+    {
+     "id": 3213030,
+     "name": "moodyKrea2MixV9IsHere_v80BF16FP8_int4.safetensors",
+     "type": "Diffusion Model",
+     "sizeKB": 7363317.2421875,
+     "downloadUrl": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=int4",
+     "modelId": 2731187,
+     "modelName": "Moody Krea 2 Mix - V9 is here - V8SE Free免费!",
+     "modelVersionId": 3327123,
+     "is_nsfw": true,
+     "nsfw_level": 60,
+     "sha256": "b1f09f12c8ece75c6c6be78d801c41ab8c58b6bae6594e1e19f79f1a34536fa7",
+     "createdAt": "2026-09-15T01:48:39.317Z",
+     "updatedAt": "2026-11-04T00:05:40.308Z",
+     "is_primary": false,
+     "mirrors": [
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80BF16FP8_int4.safetensors",
+       "url": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=int4",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327123",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80_int4.safetensors",
+       "url": "https://civitai.com/api/download/models/3327244?type=Model&format=SafeTensor&fp=int4",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327244",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      },
+      {
+       "filename": "moodyKrea2Mix_v80_int4.safetensors",
+       "url": "https://huggingface.co/fdgsgw23528l/krea2-resident-bundle/resolve/main/moodyKrea2Mix_v80_int4.safetensors",
+       "source": "huggingface",
+       "model_id": null,
+       "model_version_id": null,
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      }
+     ],
+     "deleted_at": null
+    },
+    {
+     "id": 3213084,
+     "name": "moodyKrea2MixV9IsHere_v80BF16FP8_bf16.safetensors",
+     "type": "Diffusion Model",
+     "sizeKB": 25664542.4375,
+     "downloadUrl": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=bf16",
+     "modelId": 2731187,
+     "modelName": "Moody Krea 2 Mix - V9 is here - V8SE Free免费!",
+     "modelVersionId": 3327123,
+     "is_nsfw": true,
+     "nsfw_level": 60,
+     "sha256": "939a2272bc2f87d77f22d13cd1c74026b0336316c742e7237c63e67038de3026",
+     "createdAt": "2026-09-15T01:48:39.317Z",
+     "updatedAt": "2026-11-04T00:05:40.308Z",
+     "is_primary": false,
+     "mirrors": [
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80BF16FP8_bf16.safetensors",
+       "url": "https://civitai.com/api/download/models/3327123?type=Diffusion%20Model&format=SafeTensor&fp=bf16",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327123",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      }
+     ],
+     "deleted_at": null
+    },
+    {
+     "id": 3213080,
+     "name": "moodyKrea2MixV9IsHere_v80BF16FP8_fp8.safetensors",
+     "type": "Diffusion Model",
+     "sizeKB": 13459026.515625,
+     "downloadUrl": "https://civitai.com/api/download/models/3327123",
+     "modelId": 2731187,
+     "modelName": "Moody Krea 2 Mix - V9 is here - V8SE Free免费!",
+     "modelVersionId": 3327123,
+     "is_nsfw": true,
+     "nsfw_level": 60,
+     "sha256": "89c13efa6264b4ff13f8f95c8cb4269fa9a1612935f05d5841cace7358888356",
+     "createdAt": "2026-09-15T01:48:39.317Z",
+     "updatedAt": "2026-11-04T00:05:40.308Z",
+     "is_primary": false,
+     "mirrors": [
+      {
+       "filename": "moodyKrea2MixV9IsHere_v80BF16FP8_fp8.safetensors",
+       "url": "https://civitai.com/api/download/models/3327123",
+       "source": "civitai",
+       "model_id": "2731187",
+       "model_version_id": "3327123",
+       "deletedAt": null,
+       "is_gated": false,
+       "is_paid": false
+      }
+     ],
+     "deleted_at": null
+    }
+   ],
+   "trigger": [],
+   "allow_download": true,
+   "download_url": "/api/download/models/3327123",
+   "platform_url": "https://civitai.red/models/2731187?modelVersionId=3327123",
+   "civitai_model_id": 2731187,
+   "civitai_model_version_id": 3327123,
+   "url": "/models/2731187?modelVersionId=3327123",
+   "mirrors": []
+  },
+  "platform": "civitai",
+  "platform_name": "CivitAI"
+ }
+}

@@ -1,0 +1,109 @@
+{
+ "id": 3327244,
+ "modelId": 2731187,
+ "name": "V8.0",
+ "nsfwLevel": 60,
+ "createdAt": "2026-09-15T00:31:33.950Z",
+ "updatedAt": "2026-10-25T09:59:51.358Z",
+ "status": "Published",
+ "publishedAt": "2026-09-15T01:08:12.966Z",
+ "trainingStatus": null,
+ "trainingDetails": null,
+ "baseModel": "Krea 2",
+ "baseModelType": "Standard",
+ "uploadType": "Created",
+ "usageControl": "Download",
+ "licensingFee": 0.1,
+ "paidAccess": null,
+ "air": "urn:air:krea2:checkpoint:civitai:2731187@3327244",
+ "model": {
+  "name": "Moody Krea 2 Mix - V9 is here - V8SE Free免费!",
+  "type": "Checkpoint",
+  "nsfw": true,
+  "poi": false
+ },
+ "files": [
+  {
+   "id": 3213132,
+   "sizeKB": 7363317.2421875,
+   "name": "moodyKrea2MixV9IsHere_v80_3213132.safetensors",
+   "overrideName": null,
+   "type": "Model",
+   "pickleScanResult": "Success",
+   "pickleScanMessage": null,
+   "virusScanResult": "Success",
+   "virusScanMessage": null,
+   "scannedAt": "2026-09-15T00:45:35.348Z",
+   "metadata": {
+    "format": "SafeTensor",
+    "fp": "int4"
+   },
+   "hashes": {
+    "AutoV1": "FF711765",
+    "AutoV2": "B1F09F12C8",
+    "SHA256": "B1F09F12C8ECE75C6C6BE78D801C41AB8C58B6BAE6594E1E19F79F1A34536FA7",
+    "CRC32": "97DE1FDF",
+    "BLAKE3": "5E474A1702E1D02915E1EAFE965FDE654200B9C975EAD425A287FFF439EB72B2",
+    "AutoV3": "F8D157E03B84",
+    "SHA256_12": "B1F09F12C8EC"
+   },
+   "primary": false,
+   "downloadUrl": "https://civitai.com/api/download/models/3327244?fileId=3213132"
+  },
+  {
+   "id": 3213134,
+   "sizeKB": 8119118.6015625,
+   "name": "moodyKrea2MixV9IsHere_v80_3213134.safetensors",
+   "overrideName": null,
+   "type": "Model",
+   "pickleScanResult": "Success",
+   "pickleScanMessage": null,
+   "virusScanResult": "Success",
+   "virusScanMessage": null,
+   "scannedAt": "2026-09-15T00:47:31.714Z",
+   "metadata": {
+    "format": "SafeTensor",
+    "fp": "nvfp4"
+   },
+   "hashes": {
+    "AutoV1": "5F986B98",
+    "AutoV2": "45B8D5F7C7",
+    "SHA256": "45B8D5F7C7DF531E2489F6F08926DE4BCB627044FDE460C664A89522DB827383",
+    "CRC32": "9A33D763",
+    "BLAKE3": "D476F0DC68F471B6B6D623CC2ACD5496FEAD9B1EA1AD73EA5F2F8396551BEA68",
+    "AutoV3": "146B1CAEF9BD",
+    "SHA256_12": "45B8D5F7C7DF"
+   },
+   "primary": false,
+   "downloadUrl": "https://civitai.com/api/download/models/3327244?fileId=3213134"
+  },
+  {
+   "id": 3213143,
+   "sizeKB": 13466100.9609375,
+   "name": "moodyKrea2MixV9IsHere_v80_3213143.safetensors",
+   "overrideName": null,
+   "type": "Model",
+   "pickleScanResult": "Success",
+   "pickleScanMessage": null,
+   "virusScanResult": "Success",
+   "virusScanMessage": null,
+   "scannedAt": "2026-09-15T00:50:46.469Z",
+   "metadata": {
+    "format": "SafeTensor",
+    "fp": "int8"
+   },
+   "hashes": {
+    "AutoV1": "FF082E1B",
+    "AutoV2": "7B9C56858A",
+    "SHA256": "7B9C56858A518F9FBED261AA8C535D3BB409FC8ECF441DAD780902703C1ED454",
+    "CRC32": "84DE9A56",
+    "BLAKE3": "0CA5FD821E29B0E2DE46493A0FA18AE7CE2A5666EC5556A59839FF2E83F26E78",
+    "AutoV3": "23A5A20B0626",
+    "SHA256_12": "7B9C56858A51"
+   },
+   "primary": true,
+   "downloadUrl": "https://civitai.com/api/download/models/3327244?fileId=3213143"
+  }
+ ],
+ "downloadUrl": "https://civitai.com/api/download/models/3327244"
+}
