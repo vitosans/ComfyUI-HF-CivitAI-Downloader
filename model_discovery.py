@@ -78,6 +78,7 @@ import threading
 _cancelled_searches = set()
 _skipped_models = {}  # request_id -> set of lowercase filenames
 _search_locks = threading.Lock()
+_node_widget_schema_hints_lock = threading.Lock()
 _current_searching_models = {}  # request_id -> current filename
 
 class SearchCancelledException(Exception):
@@ -817,16 +818,17 @@ _BUILTIN_NODE_WIDGET_SCHEMA_HINTS: dict[str, list[dict[str, Any]]] = {
 
 def get_node_widget_schema_hints() -> dict[str, list[dict[str, Any]]]:
     global _node_widget_schema_hints_cache
-    if _node_widget_schema_hints_cache is None:
-        try:
-            scanned = _scan_custom_node_widget_schemas()
-            for k, v in _BUILTIN_NODE_WIDGET_SCHEMA_HINTS.items():
-                scanned.setdefault(k, v)
-            _node_widget_schema_hints_cache = scanned
-            print(f"[DEBUG] Scanned widget schema hints for {len(_node_widget_schema_hints_cache)} node classes")
-        except Exception as e:
-            print(f"[DEBUG] Failed to scan custom node widget schemas: {e}")
-            _node_widget_schema_hints_cache = dict(_BUILTIN_NODE_WIDGET_SCHEMA_HINTS)
+    with _node_widget_schema_hints_lock:
+        if _node_widget_schema_hints_cache is None:
+            try:
+                scanned = _scan_custom_node_widget_schemas()
+                for k, v in _BUILTIN_NODE_WIDGET_SCHEMA_HINTS.items():
+                    scanned.setdefault(k, v)
+                _node_widget_schema_hints_cache = scanned
+                print(f"[DEBUG] Scanned widget schema hints for {len(_node_widget_schema_hints_cache)} node classes")
+            except Exception as e:
+                print(f"[DEBUG] Failed to scan custom node widget schemas: {e}")
+                _node_widget_schema_hints_cache = dict(_BUILTIN_NODE_WIDGET_SCHEMA_HINTS)
     return _node_widget_schema_hints_cache
 
 def _lookup_known_directory_for_filename(filename: str | None) -> str | None:
