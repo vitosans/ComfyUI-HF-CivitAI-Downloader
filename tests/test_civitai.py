@@ -14,6 +14,7 @@ parent_dir = os.path.dirname(repo_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
+import ComfyUI_HuggingFace_Downloader.civitai_discovery as cd
 import ComfyUI_HuggingFace_Downloader.downloader as dl
 
 
@@ -76,11 +77,6 @@ class TestCivitaiSettings(unittest.TestCase):
         self.assertEqual(dl.CIVITAI_HOSTS, {"civitai.com", "civitai.red", "civitai.green"})
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
-import ComfyUI_HuggingFace_Downloader.civitai_discovery as cd
 
 
 class TestSearchQueries(unittest.TestCase):
@@ -102,3 +98,232 @@ class TestSearchQueries(unittest.TestCase):
         qs = cd.search_queries("moodyKrea2MixUncensoredV8SEGoes.safetensors")
         self.assertLessEqual(len(qs), 3)
         self.assertEqual(len(qs), len(set(qs)))
+
+
+FIXTURES = os.path.join(current_dir, "fixtures", "civitai")
+HASH = "7b9c56858a518f9fbed261aa8c535d3bb409fc8ecf441dad780902703c1ed454"
+RENAMED = "moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors"
+
+
+def _fx(name):
+    with open(os.path.join(FIXTURES, name), encoding="utf-8") as f:
+        return json.load(f)
+
+
+class FakeApi:
+    """Callable standing in for cd._get_json: url-substring -> payload (or None)."""
+
+    def __init__(self, routes):
+        self.routes = routes
+        self.calls = []
+
+    def __call__(self, url, auth=False):
+        self.calls.append(url)
+        for needle, payload in self.routes:
+            if needle in url:
+                return payload
+        return None
+
+
+def _routes(search=True, by_hash=True, archive_search=True, archive_sha=True):
+    return [
+        ("/api/v1/models?", _fx("models_search_moody.json") if search else {"items": []}),
+        ("by-hash", _fx("model_version_by_hash.json") if by_hash else None),
+        ("/api/search", _fx("archive_search.json") if archive_search else {"results": []}),
+        ("/api/sha256/", _fx("archive_sha256.json") if archive_sha else None),
+    ]
+
+
+class TestLookup(unittest.TestCase):
+    def _run(self, filename, routes, budget=None, status=None):
+        api = FakeApi(routes)
+        with patch.object(cd, "_get_json", api):
+            result = cd.lookup(filename, budget or cd.Budget(), status)
+        return result, api
+
+    def test_exact_filename_in_family(self):
+        result, _ = self._run("moodyKrea2MixV9IsHere_v80_int8.safetensors", _routes())
+        exact = result["exact"]
+        self.assertEqual(exact["match"], "exact")
+        self.assertEqual(exact["site"], "civitai")
+        self.assertTrue(exact["url"].startswith("https://civitai.com/api/download/models/3327244"))
+        self.assertEqual(exact["sha256"], HASH)
+        self.assertEqual(exact["base_model"], "Krea 2")
+        self.assertEqual(exact["version_name"], "V8.0")
+        self.assertIsInstance(exact["size_bytes"], int)
+
+    def test_renamed_file_found_by_hash(self):
+        result, api = self._run(RENAMED, _routes())
+        exact = result["exact"]
+        self.assertEqual(exact["match"], "hash")
+        self.assertEqual(exact["sha256"], HASH)
+        self.assertEqual(exact["filename"], "moodyKrea2MixV9IsHere_v80_int8.safetensors")
+        self.assertFalse(any("by-hash" in u for u in api.calls))
+
+    def test_hash_falls_back_to_by_hash_when_search_misses(self):
+        result, api = self._run(RENAMED, _routes(search=False))
+        exact = result["exact"]
+        self.assertEqual(exact["match"], "hash")
+        self.assertEqual(exact["site"], "civitai")
+        self.assertEqual(exact["sha256"], HASH)
+        self.assertTrue(any("by-hash/" + HASH in u for u in api.calls))
+
+    def test_archive_mirror_when_civitai_lost_it(self):
+        result, _ = self._run(RENAMED, _routes(search=False, by_hash=False))
+        exact = result["exact"]
+        self.assertEqual(exact["site"], "civitai_archive")
+        self.assertEqual(exact["match"], "hash")
+        self.assertEqual(exact["sha256"], HASH)
+        mirror = next(
+            m for m in _fx("archive_sha256.json")["files"]
+            if m["deletedAt"] is None and not m["is_gated"] and not m["is_paid"]
+        )
+        self.assertEqual(exact["url"], mirror["url"])
+
+    def test_family_same_base_only(self):
+        search = _fx("models_search_moody.json")
+        other = json.loads(json.dumps(search["items"][1]))
+        other["id"] = 99
+        for v in other["modelVersions"]:
+            v["baseModel"] = "Flux.1 D"
+        search["items"].append(other)
+        routes = [("/api/v1/models?", search), ("/api/search", _fx("archive_search.json"))]
+        result, _ = self._run("moodyKrea2MixV9IsHere_vUnknown_int8.safetensors", routes)
+        self.assertIsNone(result["exact"])
+        fam = result["family"]
+        self.assertTrue(0 < len(fam) <= 8)
+        self.assertTrue(all(c["base_model"] == "Krea 2" for c in fam))
+        self.assertTrue(all(c["match"] == "family" for c in fam))
+        self.assertEqual(fam[0]["model_name"], search["items"][0]["name"])
+        self.assertNotIn("Flux.1 D", [c["base_model"] for c in fam])
+
+    def test_family_unknown_base_same_model_only(self):
+        search = _fx("models_search_moody.json")
+        search["items"] = search["items"][:2]
+        routes = [("/api/v1/models?", search), ("/api/search", {"results": []})]
+        result, _ = self._run("moodyKrea2MixV9IsHere_vUnknown_int8.safetensors", routes)
+        self.assertIsNone(result["exact"])
+        self.assertTrue(result["family"])
+        self.assertEqual({c["model_name"] for c in result["family"]}, {search["items"][0]["name"]})
+
+    def test_only_model_extensions_are_candidates(self):
+        result, _ = self._run("moodyKrea2MixV9IsHere_vUnknown_int8.safetensors", _routes(archive_search=False))
+        exts = (".safetensors", ".gguf", ".ckpt", ".pt", ".pth", ".bin", ".sft")
+        self.assertTrue(all(c["filename"].lower().endswith(exts) for c in result["family"]))
+
+    def test_unauthorized_degrades(self):
+        routes = [
+            ("civitai.com", None),
+            ("/api/search", _fx("archive_search.json")),
+            ("/api/sha256/", _fx("archive_sha256.json")),
+        ]
+        result, _ = self._run(RENAMED, routes)
+        self.assertEqual(result["exact"]["site"], "civitai_archive")
+
+    def test_malformed_payload_skipped(self):
+        search = {"items": [
+            {"id": 1, "name": "bad", "modelVersions": [{"files": None}]},
+            {"id": 2, "name": "worse", "modelVersions": None},
+            "junk",
+            _fx("models_search_moody.json")["items"][0],
+        ]}
+        routes = [("/api/v1/models?", search), ("/api/search", {"results": "x"})]
+        result, _ = self._run("moodyKrea2MixV9IsHere_v80_int8.safetensors", routes)
+        self.assertEqual(result["exact"]["match"], "exact")
+
+    def test_no_results_returns_none(self):
+        result, _ = self._run("moodyKrea2MixV9IsHere_v80_int8.safetensors", [])
+        self.assertIsNone(result)
+
+    def test_budget_stops_requests(self):
+        _, api = self._run(RENAMED, _routes(), budget=cd.Budget(max_requests=1))
+        self.assertEqual(len(api.calls), 1)
+
+    def test_rate_limit_stops_lookup(self):
+        calls = []
+
+        def boom(url, auth=False):
+            calls.append(url)
+            raise cd.RateLimited()
+
+        with patch.object(cd, "_get_json", boom):
+            result = cd.lookup(RENAMED, cd.Budget())
+        self.assertIsNone(result)
+        self.assertEqual(len(calls), 1)
+
+    def test_status_sources(self):
+        seen = []
+        self._run(RENAMED, _routes(search=False), status=seen.append)
+        self.assertEqual(seen[0], "civitai_search")
+        self.assertIn("civitai_archive", seen)
+        self.assertIn("civitai_hash", seen)
+
+
+class TestGetJson(unittest.TestCase):
+    class _Resp:
+        def __init__(self, body):
+            self.body = body
+
+        def read(self):
+            return self.body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def _captured(self, url, auth, token="secret"):
+        seen = {}
+
+        def fake_open(req, timeout=None):
+            seen["req"] = req
+            return self._Resp(b'{"ok": 1}')
+
+        with patch.object(cd, "get_civitai_token", return_value=token), \
+                patch.object(cd.urllib.request, "urlopen", fake_open):
+            out = cd._get_json(url, auth)
+        return out, seen["req"]
+
+    def test_token_sent_only_to_civitai_hosts_when_auth(self):
+        out, req = self._captured("https://civitai.com/api/v1/models?x=1", True)
+        self.assertEqual(out, {"ok": 1})
+        self.assertEqual(req.unredirected_hdrs.get("Authorization"), "Bearer secret")
+
+    def test_token_never_sent_to_archive(self):
+        _, req = self._captured("https://civitaiarchive.com/api/search?q=a", True)
+        self.assertNotIn("Authorization", req.unredirected_hdrs)
+        self.assertNotIn("Authorization", req.headers)
+
+    def test_no_token_without_auth_flag(self):
+        _, req = self._captured("https://civitai.com/api/v1/models", False)
+        self.assertNotIn("Authorization", req.unredirected_hdrs)
+
+    def test_429_raises_and_other_errors_return_none(self):
+        def raiser(code):
+            def f(req, timeout=None):
+                raise cd.urllib.error.HTTPError(req.full_url, code, "x", {}, None)
+            return f
+
+        with patch.object(cd.urllib.request, "urlopen", raiser(429)):
+            with self.assertRaises(cd.RateLimited):
+                cd._get_json("https://civitai.com/x", False)
+        with patch.object(cd.urllib.request, "urlopen", raiser(401)):
+            self.assertIsNone(cd._get_json("https://civitai.com/x", False))
+
+    def test_invalid_json_returns_none(self):
+        with patch.object(cd.urllib.request, "urlopen", lambda r, timeout=None: self._Resp(b"<html>")):
+            self.assertIsNone(cd._get_json("https://civitai.com/x", False))
+
+
+class TestBudget(unittest.TestCase):
+    def test_spend_until_exhausted(self):
+        b = cd.Budget(max_requests=2, deadline_s=60)
+        self.assertEqual([b.spend(), b.spend(), b.spend()], [True, True, False])
+
+    def test_deadline(self):
+        self.assertFalse(cd.Budget(max_requests=5, deadline_s=0).spend())
+
+
+if __name__ == "__main__":
+    unittest.main()
