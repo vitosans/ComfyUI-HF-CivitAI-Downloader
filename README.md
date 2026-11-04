@@ -60,14 +60,15 @@ ComfyUI node pack and UI tools for:
 - Restore all or selected content.
 - Delete selected backup entries from the remote repo.
 - Handles custom node snapshots with `comfy-cli` (`custom_nodes_snapshot.yaml`).
-- Strips `downloader.hf_token` from backed-up settings and preserves local token on restore.
+- Strips `downloader.hf_token` and `downloader.civitai_token` from backed-up settings and preserves the local tokens on restore.
 
 #### CivitAI lookup
 
 After the Hugging Face search, models still missing are looked up on CivitAI (civitai.com API; civitai.green/.red share it) by the words in the filename, then on civitaiarchive.com by old filename, then sha256, then CivitAI by-hash, then archive mirrors.
 
-- Exact or sha256-proven matches keep the workflow filename.
-- Otherwise same-model/same-base "family" options appear under Alternatives, labelled with version, size, base model, NSFW and whether the file is the same or different from the Hugging Face one.
+- Exact or sha256-proven matches keep the workflow filename. Generic names (`model.safetensors`, `pytorch_lora_weights.safetensors`, ...) only count as exact when the archive confirms the sha256.
+- Otherwise same-model/same-base "family" options appear under Alternatives, labelled with model, version, filename, size, base model and NSFW. Family options of a CivitAI type that does not fit the target folder (e.g. a Checkpoint for `loras`) are dropped.
+- Rows Hugging Face already resolved only get the exact CivitAI match as an alternative, marked as the same or a different file.
 - When both exist, Hugging Face stays preselected. Nothing downloads without a click.
 - Downloads with a known sha256 are verified and rejected on mismatch.
 - The API key is only sent to CivitAI hosts and is not forwarded on redirects.

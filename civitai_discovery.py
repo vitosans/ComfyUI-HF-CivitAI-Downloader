@@ -17,6 +17,26 @@ _MAX_FAMILY = 8
 _MODEL_EXTENSIONS = (".safetensors", ".gguf", ".ckpt", ".pt", ".pth", ".bin", ".sft")
 _USER_AGENT = "ComfyUI_HuggingFace_Downloader"
 
+# File stems shared by unrelated models: a name match alone is not proof.
+_GENERIC_STEMS = frozenset({
+    "model", "model.fp16", "pytorch_model", "pytorch_lora_weights", "diffusion_pytorch_model",
+    "diffusion_pytorch_model.fp16", "adapter_model", "lora", "unet", "vae", "ae", "clip",
+    "text_encoder", "weights", "checkpoint",
+})
+
+# Row folder (top segment) -> CivitAI model types that belong there.
+_FOLDER_TYPES = {
+    "loras": {"lora", "locon", "dora", "lycoris"},
+    "lycoris": {"lora", "locon", "dora", "lycoris"},
+    "vae": {"vae"},
+    "checkpoints": {"checkpoint"},
+    "diffusion_models": {"checkpoint"},
+    "unet": {"checkpoint"},
+    "embeddings": {"textualinversion"},
+    "controlnet": {"controlnet"},
+    "upscale_models": {"upscaler"},
+}
+
 _MAX_QUERIES = 3
 _MIN_QUERY_CHARS = 5
 _MIN_QUERY_WORDS = 2
@@ -94,6 +114,21 @@ def _host(url):
     return host[4:] if host.startswith("www.") else host
 
 
+_auth_warned = False
+
+
+def _reset_auth_warning():
+    global _auth_warned
+    _auth_warned = False
+
+
+def _warn_auth_rejected():
+    global _auth_warned
+    if not _auth_warned:
+        _auth_warned = True
+        print("[CivitAI] lookup returned 401/403 \u2014 check the CivitAI API key")
+
+
 def _get_json(url, auth=False):
     """GET ``url`` as JSON. None on any error; RateLimited on HTTP 429."""
     req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT, "Accept": "application/json"})
@@ -107,6 +142,8 @@ def _get_json(url, auth=False):
     except urllib.error.HTTPError as e:
         if e.code == 429:
             raise RateLimited() from e
+        if e.code in (401, 403) and _host(url) in CIVITAI_HOSTS:
+            _warn_auth_rejected()
         return None
     except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
         return None
@@ -129,7 +166,7 @@ def _sha(file):
     return value.lower() if isinstance(value, str) and value else None
 
 
-def _candidate(file, version, model_name, model_id, nsfw, match, site="civitai", url=None):
+def _candidate(file, version, model_name, model_id, nsfw, match, site="civitai", url=None, model_type=None):
     size_kb = file.get("sizeKB")
     return {
         "filename": file["name"],
@@ -143,6 +180,7 @@ def _candidate(file, version, model_name, model_id, nsfw, match, site="civitai",
         "site": site,
         "match": match,
         "civitai_type": file.get("type") if isinstance(file.get("type"), str) else None,
+        "model_type": model_type if isinstance(model_type, str) else None,
         "_model_id": model_id,
     }
 
@@ -167,13 +205,19 @@ def _search_candidates(items, match="family"):
         model = _dict(model)
         for file, version in _model_files(model):
             out.append(_candidate(file, version, model.get("name"), model.get("id"),
-                                  model.get("nsfw"), match))
+                                  model.get("nsfw"), match, model_type=model.get("type")))
     return out
 
 
-def _family(items, exclude, model_id, base, exclude_name=None):
+def _folder_allows(folder, model_type):
+    """False only when both the row folder and the CivitAI model type are known and disagree."""
+    allowed = _FOLDER_TYPES.get((folder or "").lower())
+    return not allowed or not model_type or model_type.lower() in allowed
+
+
+def _family(items, exclude, model_id, base, exclude_name=None, folder=None):
     """Alternatives: same-model files first, then same-base files of other models."""
-    pool = _search_candidates(items)
+    pool = [c for c in _search_candidates(items) if _folder_allows(folder, c["model_type"])]
     if model_id is None and items:
         model_id = _dict(items[0]).get("id")
     same = [c for c in pool if c["_model_id"] == model_id]
@@ -194,42 +238,52 @@ def _by_hash_candidate(data, sha):
     model = _dict(data.get("model"))
     for file in _list(data.get("files")):
         if isinstance(file, dict) and isinstance(file.get("name"), str) and _sha(file) == sha:
-            return _candidate(file, data, model.get("name"), data.get("modelId"), model.get("nsfw"), "hash")
+            return _candidate(file, data, model.get("name"), data.get("modelId"), model.get("nsfw"), "hash",
+                              model_type=model.get("type"))
     return None
+
+
+def _usable_mirrors(data):
+    """Live, free archive mirrors; non-Hugging Face first (the HF path skips our sha256 check)."""
+    mirrors = [m for m in map(_dict, _list(_dict(data).get("files")))
+               if m.get("deletedAt") is None and not m.get("is_gated") and not m.get("is_paid")
+               and isinstance(m.get("url"), str) and m["url"] and isinstance(m.get("filename"), str)]
+    return sorted(mirrors, key=lambda m: _is_hf_url(m["url"]))
 
 
 def _mirror_candidate(data, sha, base):
-    data = _dict(data)
-    model = _dict(data.get("model"))
-    for mirror in _list(data.get("files")):
-        mirror = _dict(mirror)
-        if mirror.get("deletedAt") is None and not mirror.get("is_gated") and not mirror.get("is_paid") \
-                and mirror.get("url") and isinstance(mirror.get("filename"), str):
-            return {
-                "filename": mirror["filename"],
-                "url": mirror["url"],
-                "sha256": sha,
-                "size_bytes": None,
-                "base_model": base,
-                "version_name": "",
-                "model_name": model.get("name") or "",
-                "nsfw": bool(model.get("is_nsfw")),
-                "site": "civitai_archive",
-                "match": "hash",
-                "civitai_type": None,
-                "_model_id": model.get("id"),
-            }
-    return None
+    model = _dict(_dict(data).get("model"))
+    mirrors = _usable_mirrors(data)
+    if not mirrors:
+        return None
+    mirror = mirrors[0]
+    return {
+        "filename": mirror["filename"],
+        "url": mirror["url"],
+        "sha256": sha,
+        "size_bytes": None,
+        "base_model": base,
+        "version_name": "",
+        "model_name": model.get("name") or "",
+        "nsfw": bool(model.get("is_nsfw")),
+        "site": "civitai_archive",
+        "match": "hash",
+        "civitai_type": None,
+        "model_type": model.get("type") if isinstance(model.get("type"), str) else None,
+        "_model_id": model.get("id"),
+    }
 
 
-def lookup(filename, budget, status_cb=None):
+def lookup(filename, budget, status_cb=None, folder=None):
     """Find ``filename`` (or same-family alternatives) on CivitAI / its archive.
 
     Returns ``{"exact": Candidate | None, "family": [Candidate]}`` or None when
     nothing was found. A 429 exhausts the shared ``budget``; whatever was found
-    before the lookup stopped is still returned.
+    before the lookup stopped is still returned. A known ``folder`` (top model
+    folder of the row) drops family files of a CivitAI type that does not
+    belong there; the exact match is never filtered.
     """
-    return _lookup(_basename(filename), budget, status_cb)
+    return _lookup(_basename(filename), budget, status_cb, folder)
 
 
 def _fetch(url, budget, status_cb, source, auth=False):
@@ -247,7 +301,7 @@ def _top_model_base(items):
     return bases.pop() if len(bases) == 1 and None not in bases else None
 
 
-def _lookup(wanted, budget, status_cb):
+def _lookup(wanted, budget, status_cb, folder=None):
     state = {"items": [], "exact": None, "base": None}
     try:
         _resolve(wanted, budget, status_cb, state)
@@ -259,7 +313,7 @@ def _lookup(wanted, budget, status_cb):
     base = (exact["base_model"] if exact else None) or state["base"] or _top_model_base(items)
     family = _family(items, exact["sha256"] if exact else None,
                      exact["_model_id"] if exact else None, base,
-                     exact["filename"] if exact else None)
+                     exact["filename"] if exact else None, folder)
     if not exact and not family:
         return None
     return {"exact": _public(exact) if exact else None, "family": family}
@@ -275,17 +329,24 @@ def _resolve(wanted, budget, status_cb, state):
             break
 
     pool = _search_candidates(state["items"], "exact")
-    exact = next((c for c in pool if c["filename"].lower() == wanted_l), None)
-    state["exact"] = exact
-    if exact:
-        return
+    generic = _is_generic_name(wanted)
+    if not generic:
+        state["exact"] = next((c for c in pool if c["filename"].lower() == wanted_l), None)
+        if state["exact"]:
+            return
 
     sha, state["base"] = _archive_hash(wanted, budget, status_cb)
     if not sha:
         return
+    if generic:  # proof = a search file with this name whose sha256 the archive confirms
+        pool = [c for c in pool if c["filename"].lower() == wanted_l]
     exact = next((c for c in pool if c["sha256"] == sha), None)
     if exact:
         exact["match"] = "hash"
+    elif generic:
+        # The archive hash is only a name hit too; without a search file that
+        # shares it there is no proof, so leave the name matches as family.
+        return
     else:
         data = _fetch(f"{CIVITAI_API}/api/v1/model-versions/by-hash/{sha}", budget, status_cb, "civitai_hash", True)
         exact = _by_hash_candidate(data, sha)
@@ -308,6 +369,10 @@ def _archive_hash(wanted, budget, status_cb):
     return None, None
 
 
+def _is_generic_name(filename):
+    return os.path.splitext(_basename(filename))[0].lower() in _GENERIC_STEMS
+
+
 def _is_hf_url(url):
     return _host(url or "") in ("huggingface.co", "www.huggingface.co") or _host(url or "").endswith(".huggingface.co")
 
@@ -317,12 +382,19 @@ def _default_hf_sha256(repo, path):
     return get_remote_file_metadata(repo, path, token=get_token())[1]
 
 
+def _format_size(size):
+    if not size:
+        return ""
+    if size < 1024 ** 3:
+        return f"{max(1, round(size / 1024 ** 2))} MB"
+    return f"{size / 1024 ** 3:.1f} GB"
+
+
 def _label(candidate, relation=None):
     first = "CivitAI Archive" if candidate.get("site") == "civitai_archive" else "CivitAI"
     name = " ".join(p for p in (candidate.get("model_name"), candidate.get("version_name")) if p)
-    size = candidate.get("size_bytes")
-    parts = [first, name,
-             f"{size / 1024 ** 3:.1f} GB" if size else "",
+    parts = [first, name, candidate.get("filename") or "",
+             _format_size(candidate.get("size_bytes")),
              candidate.get("base_model") or "",
              "NSFW" if candidate.get("nsfw") else "",
              relation or ""]
@@ -348,8 +420,10 @@ def _append_alternatives(row, alts):
     row["alternatives"] = existing + [a for a in alts if a["url"] not in urls]
 
 
-def _same_file_relation(row, exact, hf_sha256):
+def _same_file_relation(row, exact, hf_sha256, budget):
     if not exact.get("sha256") or not row.get("hf_repo") or not row.get("hf_path"):
+        return None
+    if not budget.spend():  # the HF metadata call counts against the scan budget
         return None
     try:
         hf_sha = hf_sha256(row["hf_repo"], row["hf_path"])
@@ -360,20 +434,39 @@ def _same_file_relation(row, exact, hf_sha256):
     return "same file" if hf_sha.lower() == exact["sha256"] else "different file"
 
 
-def _apply_result(row, result, hf_sha256):
+def _apply_result(row, result, hf_sha256, budget):
     exact, family = result.get("exact"), result.get("family") or []
     folder = row.get("suggested_folder")
     alts = []
-    if exact and exact.get("url"):
-        if not row.get("url"):
+    if row.get("url"):
+        # HF row: CivitAI only fills the both-sources picker with the same model.
+        if exact and exact.get("url"):
+            alts.append(_alternative(exact, folder, _same_file_relation(row, exact, hf_sha256, budget)))
+    else:
+        if exact and exact.get("url"):
             row["url"] = exact["url"]
             row["sha256"] = exact.get("sha256")
             row["source"] = exact.get("site", "civitai")
-        else:
-            alts.append(_alternative(exact, folder, _same_file_relation(row, exact, hf_sha256)))
-    alts.extend(_alternative(c, folder) for c in family if c.get("url"))
+        alts.extend(_alternative(c, folder) for c in family if c.get("url"))
     if alts:
         _append_alternatives(row, alts)
+
+
+def _row_folder(row):
+    folder = row.get("suggested_folder") or row.get("directory")
+    if not isinstance(folder, str):
+        return None
+    top = re.split(r"[\\/]", folder.strip().strip("/\\"))[0]
+    return top or None
+
+
+def _cancel_or_skip(md, request_id, name):
+    """Raise on cancel; True when the user skipped ``name``."""
+    if not request_id:
+        return False
+    if md.is_search_cancelled(request_id):
+        raise md.SearchCancelledException("Search cancelled by user")
+    return md.is_model_skipped(request_id, name)
 
 
 def search_missing(models, *, skip_all, skip_filenames, request_id, status_cb=None, hf_sha256=None):
@@ -388,14 +481,16 @@ def search_missing(models, *, skip_all, skip_filenames, request_id, status_cb=No
     from . import model_discovery as md  # lazy: model_discovery imports this module
     hf_sha256 = hf_sha256 or _default_hf_sha256
     budget = Budget()
-    for row in models:
+    _reset_auth_warning()
+    # Unresolved rows first: HF rows only get an optional alternative, so they
+    # use whatever budget is left.
+    rows = sorted(models, key=lambda r: bool(r.get("url")))
+    for row in rows:
         name = row.get("filename") or ""
         url = row.get("url")
         if not name or (url and not _is_hf_url(url)):
             continue
-        if request_id and md.is_search_cancelled(request_id):
-            raise md.SearchCancelledException("Search cancelled by user")
-        if name.lower() in skip_filenames or (request_id and md.is_model_skipped(request_id, name)):
+        if name.lower() in skip_filenames or _cancel_or_skip(md, request_id, name):
             continue
         if budget.remaining <= 0:
             break
@@ -407,9 +502,9 @@ def search_missing(models, *, skip_all, skip_filenames, request_id, status_cb=No
                 status_cb({"message": f"Searching CivitAI for {name}", "source": source, "filename": name})
 
         try:
-            result = lookup(name, budget, report)
+            result = lookup(name, budget, report, folder=_row_folder(row))
         finally:
             if request_id:
                 md.set_current_searching_model(request_id, None)
-        if result:
-            _apply_result(row, result, hf_sha256)
+        if result and not _cancel_or_skip(md, request_id, name):
+            _apply_result(row, result, hf_sha256, budget)

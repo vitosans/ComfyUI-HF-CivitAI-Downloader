@@ -135,10 +135,10 @@ def _routes(search=True, by_hash=True, archive_search=True, archive_sha=True):
 
 
 class TestLookup(unittest.TestCase):
-    def _run(self, filename, routes, budget=None, status=None):
+    def _run(self, filename, routes, budget=None, status=None, folder=None):
         api = FakeApi(routes)
         with patch.object(cd, "_get_json", api):
-            result = cd.lookup(filename, budget or cd.Budget(), status)
+            result = cd.lookup(filename, budget or cd.Budget(), status, folder=folder)
         return result, api
 
     def test_exact_filename_in_family(self):
@@ -449,14 +449,15 @@ class TestSearchMissing(unittest.TestCase):
         rows = [self._hf_row()]
         self._run(rows, {"exact": _cand(), "family": []}, hf_sha256=lambda r, p: None)
         self.assertEqual(rows[0]["alternatives"][1]["label"],
-                         "CivitAI \u00b7 Moody Krea 2 Mix - V9 is here V8.0 \u00b7 13.5 GB \u00b7 Krea 2 \u00b7 NSFW")
+                         "CivitAI \u00b7 Moody Krea 2 Mix - V9 is here V8.0 \u00b7 moody_v9.safetensors"
+                         " \u00b7 13.5 GB \u00b7 Krea 2 \u00b7 NSFW")
 
     def test_archive_label_and_unknown_parts_omitted(self):
         rows = [{"filename": "q.safetensors"}]
         fam = _cand(site="civitai_archive", size_bytes=None, base_model=None, nsfw=False,
                     version_name="", model_name="M", match="family")
         self._run(rows, {"exact": None, "family": [fam]})
-        self.assertEqual(rows[0]["alternatives"][0]["label"], "CivitAI Archive \u00b7 M")
+        self.assertEqual(rows[0]["alternatives"][0]["label"], "CivitAI Archive \u00b7 M \u00b7 moody_v9.safetensors")
 
     def test_family_alternatives_keep_real_filename(self):
         rows = [{"filename": "moody_v9.safetensors", "suggested_folder": "diffusion_models"}]
@@ -496,7 +497,7 @@ class TestSearchMissing(unittest.TestCase):
     def test_rate_limit_stops_remaining_lookups(self):
         budget_seen = []
 
-        def fake(name, budget, status_cb=None):
+        def fake(name, budget, status_cb=None, **kw):
             budget_seen.append(budget)
             budget.exhaust()
             return None
@@ -509,7 +510,7 @@ class TestSearchMissing(unittest.TestCase):
     def test_status_callback_receives_dict(self):
         events = []
 
-        def fake(name, budget, status_cb=None):
+        def fake(name, budget, status_cb=None, **kw):
             status_cb("civitai_search")
             return None
 
@@ -599,6 +600,26 @@ class TestDirectDownload(unittest.TestCase):
         self._run("https://cdn.example/x", expected_sha256=digest)
         self.assertTrue(os.path.exists(os.path.join(self.tmp.name, "m.safetensors")))
 
+    def _existing(self, body=b"old"):
+        path = os.path.join(self.tmp.name, "m.safetensors")
+        with open(path, "wb") as f:
+            f.write(body)
+        return path
+
+    def test_overwrite_keeps_existing_file_when_download_fails(self):
+        path = self._existing()
+        with self.assertRaises(RuntimeError):
+            self._run("https://cdn.example/x", overwrite=True, expected_sha256="00" * 32)
+        with open(path, "rb") as f:
+            self.assertEqual(f.read(), b"old")
+        self.assertEqual(os.listdir(self.tmp.name), ["m.safetensors"])
+
+    def test_overwrite_replaces_existing_file_after_download(self):
+        path = self._existing()
+        self._run("https://cdn.example/x", overwrite=True)
+        with open(path, "rb") as f:
+            self.assertEqual(f.read(), b"abc")
+
     def test_invalid_sha256_means_no_check(self):
         self._run("https://cdn.example/x", expected_sha256="not-a-hash")
         self.assertTrue(os.path.exists(os.path.join(self.tmp.name, "m.safetensors")))
@@ -640,6 +661,251 @@ class TestDirectDownload(unittest.TestCase):
                                            "folder": "loras", "sha256": "ab" * 32})
         self.assertEqual(payload["sha256"], "ab" * 32)
         self.assertNotIn("sha256", wa._build_retry_payload({"url": "https://x/y", "folder": "loras"}))
+
+
+class TestLookupFixes(unittest.TestCase):
+    _run = TestLookup._run
+
+    def _search_with_file(self, name, model_type="LORA", sha="c" * 64):
+        search = _fx("models_search_moody.json")
+        item = json.loads(json.dumps(search["items"][0]))
+        item["id"], item["type"], item["name"] = 77, model_type, "Some LoRA"
+        item["modelVersions"] = item["modelVersions"][:1]
+        item["modelVersions"][0]["files"] = [{
+            "name": name, "sizeKB": 1024, "hashes": {"SHA256": sha.upper()},
+            "downloadUrl": "https://civitai.com/api/download/models/777", "type": "Model",
+        }]
+        search["items"].insert(0, item)
+        return search
+
+    def test_model_type_recorded_from_search_by_hash_and_archive(self):
+        result, _ = self._run("moodyKrea2MixV9IsHere_v80_int8.safetensors", _routes())
+        self.assertEqual(result["exact"]["model_type"], "Checkpoint")
+        self.assertTrue(all(c["model_type"] == "Checkpoint" for c in result["family"]))
+        result, _ = self._run(RENAMED, _routes(search=False))
+        self.assertEqual(result["exact"]["model_type"], "Checkpoint")
+        result, _ = self._run(RENAMED, _routes(search=False, by_hash=False))
+        self.assertEqual(result["exact"]["model_type"], "Checkpoint")
+
+    def test_generic_name_match_is_family_not_exact(self):
+        search = self._search_with_file("pytorch_lora_weights.safetensors")
+        result, _ = self._run("pytorch_lora_weights.safetensors",
+                              [("/api/v1/models?", search), ("/api/search", {"results": []})])
+        self.assertIsNone(result["exact"])
+        self.assertIn("pytorch_lora_weights.safetensors", [c["filename"] for c in result["family"]])
+
+    def test_generic_name_match_case_insensitive(self):
+        search = self._search_with_file("Model.safetensors")
+        result, _ = self._run("model.safetensors",
+                              [("/api/v1/models?", search), ("/api/search", {"results": []})])
+        self.assertIsNone(result["exact"])
+
+    def test_generic_name_exact_when_archive_confirms_sha(self):
+        search = self._search_with_file("model.safetensors", sha="c" * 64)
+        archive = {"results": [{"name": "model.safetensors", "url": "/sha256/" + "c" * 64}]}
+        result, _ = self._run("model.safetensors", [("/api/v1/models?", search), ("/api/search", archive)])
+        self.assertEqual(result["exact"]["match"], "hash")
+        self.assertEqual(result["exact"]["sha256"], "c" * 64)
+
+    def test_generic_name_unconfirmed_archive_hash_is_not_exact(self):
+        search = self._search_with_file("model.safetensors", sha="c" * 64)
+        archive = {"results": [{"name": "model.safetensors", "url": "/sha256/" + HASH}]}
+        routes = [("/api/v1/models?", search), ("/api/search", archive),
+                  ("by-hash", _fx("model_version_by_hash.json")), ("/api/sha256/", _fx("archive_sha256.json"))]
+        result, api = self._run("model.safetensors", routes)
+        self.assertIsNone(result["exact"])
+        self.assertFalse(any("by-hash" in u or "/api/sha256/" in u for u in api.calls))
+
+    def test_lora_folder_drops_checkpoint_family(self):
+        result, _ = self._run("moodyKrea2MixV9IsHere_vUnknown_int8.safetensors", _routes(archive_search=False),
+                              folder="loras")
+        self.assertIsNone(result)
+
+    def test_diffusion_models_folder_keeps_checkpoint_family(self):
+        result, _ = self._run("moodyKrea2MixV9IsHere_vUnknown_int8.safetensors", _routes(archive_search=False),
+                              folder="diffusion_models")
+        self.assertTrue(result["family"])
+
+    def test_lora_folder_keeps_lora_family_and_unknown_folder_unfiltered(self):
+        search = self._search_with_file("someLora_v1.safetensors", model_type="LoCon")
+        routes = [("/api/v1/models?", search), ("/api/search", {"results": []})]
+        result, _ = self._run("someLora_vUnknown.safetensors", routes, folder="LoRAs")
+        self.assertEqual({c["model_type"] for c in result["family"]}, {"LoCon"})
+        result, _ = self._run("someLora_vUnknown.safetensors", routes, folder="custom_stuff")
+        self.assertIn("Checkpoint", {c["model_type"] for c in result["family"]})
+
+    def test_exact_never_filtered_by_folder(self):
+        result, _ = self._run("moodyKrea2MixV9IsHere_v80_int8.safetensors", _routes(), folder="loras")
+        self.assertEqual(result["exact"]["match"], "exact")
+        self.assertEqual(result["family"], [])
+
+    def test_archive_prefers_non_hf_mirror(self):
+        data = _fx("archive_sha256.json")
+        hf = [m for m in data["files"] if "huggingface.co" in m["url"]]
+        data["files"] = hf + [m for m in data["files"] if m not in hf]
+        routes = [("/api/search", _fx("archive_search.json")), ("/api/sha256/", data)]
+        result, _ = self._run(RENAMED, routes)
+        self.assertNotIn("huggingface.co", result["exact"]["url"])
+
+    def test_archive_hf_only_mirror_still_used(self):
+        data = _fx("archive_sha256.json")
+        data["files"] = [m for m in data["files"] if "huggingface.co" in m["url"]]
+        routes = [("/api/search", _fx("archive_search.json")), ("/api/sha256/", data)]
+        result, _ = self._run(RENAMED, routes)
+        self.assertIn("huggingface.co", result["exact"]["url"])
+
+
+class TestAuthWarning(unittest.TestCase):
+    def _open_401(self, req, timeout=None):
+        raise cd.urllib.error.HTTPError(req.full_url, 401, "x", {}, None)
+
+    def _calls(self, n, url="https://civitai.com/api/v1/models?query=a"):
+        import contextlib
+        import io
+        out = io.StringIO()
+        with patch.object(cd, "get_civitai_token", return_value="supersecret"), \
+                patch.object(cd.urllib.request, "urlopen", self._open_401), contextlib.redirect_stdout(out):
+            for _ in range(n):
+                self.assertIsNone(cd._get_json(url, True))
+        return out.getvalue()
+
+    def test_logged_once_per_scan_without_key(self):
+        cd._reset_auth_warning()
+        log = self._calls(3)
+        self.assertEqual(log.count("[CivitAI] lookup returned 401/403"), 1)
+        self.assertIn("check the CivitAI API key", log)
+        self.assertNotIn("supersecret", log)
+        cd._reset_auth_warning()
+        self.assertEqual(self._calls(1).count("401/403"), 1)
+
+    def test_not_logged_for_archive(self):
+        cd._reset_auth_warning()
+        self.assertEqual(self._calls(1, "https://civitaiarchive.com/api/search?q=a"), "")
+
+    def test_search_missing_resets_warning(self):
+        cd._auth_warned = True
+        with patch.object(dl, "civitai_search_enabled", return_value=True), \
+                patch.object(cd, "lookup", return_value=None):
+            cd.search_missing([{"filename": "a.safetensors"}], skip_all=False, skip_filenames=set(),
+                              request_id=None)
+        self.assertFalse(cd._auth_warned)
+
+
+class TestSearchMissingFixes(unittest.TestCase):
+    def setUp(self):
+        p = patch.object(dl, "civitai_search_enabled", return_value=True)
+        p.start()
+        self.addCleanup(p.stop)
+
+    _hf_row = TestSearchMissing._hf_row
+
+    def test_rows_without_url_looked_up_first(self):
+        order = []
+
+        def fake(name, budget, status_cb=None, **kw):
+            order.append(name)
+            return None
+
+        rows = [self._hf_row(), {"filename": "plain.safetensors"}]
+        with patch.object(cd, "lookup", fake):
+            cd.search_missing(rows, skip_all=False, skip_filenames=set(), request_id=None)
+        self.assertEqual(order, ["plain.safetensors", "moody_v9.safetensors"])
+
+    def test_hf_row_gets_only_exact_alternative(self):
+        rows = [self._hf_row()]
+        fam = [_cand(filename="f.safetensors", url="https://civitai.com/d/f", match="family")]
+        with patch.object(cd, "lookup", return_value={"exact": _cand(), "family": fam}):
+            cd.search_missing(rows, skip_all=False, skip_filenames=set(), request_id=None,
+                              hf_sha256=lambda r, p: None)
+        urls = [a["url"] for a in rows[0]["alternatives"]]
+        self.assertEqual(urls, ["u", "https://civitai.com/api/download/models/1"])
+
+    def test_hf_row_family_only_adds_nothing(self):
+        rows = [self._hf_row()]
+        fam = [_cand(filename="f.safetensors", url="https://civitai.com/d/f", match="family")]
+        with patch.object(cd, "lookup", return_value={"exact": None, "family": fam}):
+            cd.search_missing(rows, skip_all=False, skip_filenames=set(), request_id=None)
+        self.assertEqual(len(rows[0]["alternatives"]), 1)
+
+    def test_hf_sha_fetch_skipped_when_budget_gone(self):
+        def fake(name, budget, status_cb=None, **kw):
+            budget.exhaust()
+            return {"exact": _cand(), "family": []}
+
+        hf = MagicMock(return_value="a" * 64)
+        rows = [self._hf_row()]
+        with patch.object(cd, "lookup", fake):
+            cd.search_missing(rows, skip_all=False, skip_filenames=set(), request_id=None, hf_sha256=hf)
+        hf.assert_not_called()
+        label = rows[0]["alternatives"][1]["label"]
+        self.assertFalse(label.endswith("same file") or label.endswith("different file"))
+
+    def test_hf_sha_fetch_counts_against_budget(self):
+        seen = {}
+
+        def fake(name, budget, status_cb=None, **kw):
+            seen["budget"] = budget
+            budget.remaining = 1
+            return {"exact": _cand(), "family": []}
+
+        rows = [self._hf_row()]
+        with patch.object(cd, "lookup", fake):
+            cd.search_missing(rows, skip_all=False, skip_filenames=set(), request_id=None,
+                              hf_sha256=lambda r, p: "a" * 64)
+        self.assertEqual(seen["budget"].remaining, 0)
+        self.assertTrue(rows[0]["alternatives"][1]["label"].endswith("same file"))
+
+    def test_folder_passed_to_lookup(self):
+        kws = []
+
+        def fake(name, budget, status_cb=None, **kw):
+            kws.append(kw.get("folder"))
+            return None
+
+        rows = [{"filename": "a.safetensors", "suggested_folder": "loras/sub"},
+                {"filename": "b.safetensors", "directory": "vae"},
+                {"filename": "c.safetensors"}]
+        with patch.object(cd, "lookup", fake):
+            cd.search_missing(rows, skip_all=False, skip_filenames=set(), request_id=None)
+        self.assertEqual(kws, ["loras", "vae", None])
+
+    def _md_patches(self, skipped, cancelled):
+        import ComfyUI_HuggingFace_Downloader.model_discovery as md
+        return [patch.object(md, "is_model_skipped", side_effect=skipped),
+                patch.object(md, "is_search_cancelled", side_effect=cancelled),
+                patch.object(md, "set_current_searching_model")]
+
+    def _run_with(self, patches, rows):
+        for p in patches:
+            p.start()
+            self.addCleanup(p.stop)
+        with patch.object(cd, "lookup", return_value={"exact": _cand(), "family": []}):
+            cd.search_missing(rows, skip_all=False, skip_filenames=set(), request_id="r")
+
+    def test_skipped_during_lookup_result_dropped(self):
+        rows = [{"filename": "a.safetensors"}]
+        self._run_with(self._md_patches([False, True], [False, False]), rows)
+        self.assertEqual(rows, [{"filename": "a.safetensors"}])
+
+    def test_cancelled_during_lookup_raises(self):
+        import ComfyUI_HuggingFace_Downloader.model_discovery as md
+        rows = [{"filename": "a.safetensors"}]
+        with self.assertRaises(md.SearchCancelledException):
+            self._run_with(self._md_patches([False, False], [False, True]), rows)
+        self.assertEqual(rows, [{"filename": "a.safetensors"}])
+
+
+class TestLabelSize(unittest.TestCase):
+    def test_under_one_gb_shows_mb(self):
+        self.assertIn("· 512 MB ·", cd._label(_cand(size_bytes=512 * 1024 ** 2)))
+
+    def test_one_gb_and_up_shows_gb(self):
+        self.assertIn("· 1.0 GB ·", cd._label(_cand(size_bytes=1024 ** 3)))
+
+    def test_family_labels_distinguishable_by_filename(self):
+        a = cd._label(_cand(filename="a.safetensors"))
+        b = cd._label(_cand(filename="b.safetensors"))
+        self.assertNotEqual(a, b)
 
 
 if __name__ == "__main__":
