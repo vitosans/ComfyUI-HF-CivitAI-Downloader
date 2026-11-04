@@ -259,6 +259,64 @@ class TestLookup(unittest.TestCase):
         self.assertIn("civitai_hash", seen)
 
 
+class TestLookupRobustness(unittest.TestCase):
+    _run = TestLookup._run
+
+    def test_rate_limit_exhausts_shared_budget(self):
+        budget = cd.Budget()
+        calls = []
+
+        def boom(url, auth=False):
+            calls.append(url)
+            raise cd.RateLimited()
+
+        with patch.object(cd, "_get_json", boom):
+            cd.lookup(RENAMED, budget)
+            n = len(calls)
+            cd.lookup(RENAMED, budget)
+        self.assertEqual(len(calls), n)
+
+    def test_archive_base_ignored_for_nonmatching_name(self):
+        archive = {"results": [{"name": "other.safetensors", "url": "/sha256/ab", "base_model": "Flux.1 D"}]}
+        search = _fx("models_search_moody.json")
+        result, _ = self._run("moodyKrea2MixV9IsHere_vUnknown_int8.safetensors",
+                              [("/api/v1/models?", search), ("/api/search", archive)])
+        self.assertTrue(result["family"])
+        self.assertNotIn("Flux.1 D", [c["base_model"] for c in result["family"]])
+        self.assertTrue(all(c["base_model"] == "Krea 2" for c in result["family"]))
+
+    def test_top_model_uniform_base_used_for_family(self):
+        search = _fx("models_search_moody.json")
+        search["items"][0]["modelVersions"] = search["items"][0]["modelVersions"][:1]
+        result, _ = self._run("moodyKrea2MixV9IsHere_vUnknown_int8.safetensors",
+                              [("/api/v1/models?", search), ("/api/search", {"results": []})])
+        self.assertGreater(len({c["model_name"] for c in result["family"]}), 1)
+
+    def test_top_model_mixed_base_gives_same_model_family_only(self):
+        search = _fx("models_search_moody.json")
+        search["items"][0]["modelVersions"][0]["baseModel"] = "Flux.1 D"
+        result, _ = self._run("moodyKrea2MixV9IsHere_vUnknown_int8.safetensors",
+                              [("/api/v1/models?", search), ("/api/search", {"results": []})])
+        self.assertEqual({c["model_name"] for c in result["family"]}, {search["items"][0]["name"]})
+
+    def test_partial_family_returned_when_budget_runs_out(self):
+        result, _ = self._run(RENAMED, _routes(search=True), budget=cd.Budget(max_requests=1))
+        self.assertIsNone(result["exact"])
+        self.assertTrue(result["family"])
+
+    def test_exact_file_not_in_family_without_sha(self):
+        search = _fx("models_search_moody.json")
+        name = "moodyKrea2MixV9IsHere_v80_int8.safetensors"
+        for it in search["items"]:
+            for v in it["modelVersions"]:
+                for f in v["files"]:
+                    if f["name"] == name:
+                        f["hashes"] = {}
+        result, _ = self._run(name, [("/api/v1/models?", search)])
+        self.assertEqual(result["exact"]["filename"], name)
+        self.assertNotIn(name, [c["filename"] for c in result["family"]])
+
+
 class TestGetJson(unittest.TestCase):
     class _Resp:
         def __init__(self, body):
@@ -309,6 +367,12 @@ class TestGetJson(unittest.TestCase):
             with self.assertRaises(cd.RateLimited):
                 cd._get_json("https://civitai.com/x", False)
         with patch.object(cd.urllib.request, "urlopen", raiser(401)):
+            self.assertIsNone(cd._get_json("https://civitai.com/x", False))
+
+    def test_incomplete_read_returns_none(self):
+        def f(req, timeout=None):
+            raise cd.http.client.IncompleteRead(b"")
+        with patch.object(cd.urllib.request, "urlopen", f):
             self.assertIsNone(cd._get_json("https://civitai.com/x", False))
 
     def test_invalid_json_returns_none(self):

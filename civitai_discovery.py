@@ -1,4 +1,5 @@
 """CivitAI lookup for models that were not found on Hugging Face (stdlib only)."""
+import http.client
 import json
 import os
 import re
@@ -78,6 +79,9 @@ class Budget:
         self.remaining = max_requests
         self.deadline = time.monotonic() + deadline_s
 
+    def exhaust(self):
+        self.remaining = 0
+
     def spend(self):
         if self.remaining <= 0 or time.monotonic() >= self.deadline:
             return False
@@ -104,7 +108,7 @@ def _get_json(url, auth=False):
         if e.code == 429:
             raise RateLimited() from e
         return None
-    except (urllib.error.URLError, OSError, ValueError):
+    except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
         return None
 
 
@@ -167,14 +171,14 @@ def _search_candidates(items, match="family"):
     return out
 
 
-def _family(items, exclude, model_id, base):
+def _family(items, exclude, model_id, base, exclude_name=None):
     """Alternatives: same-model files first, then same-base files of other models."""
     pool = _search_candidates(items)
     if model_id is None and items:
         model_id = _dict(items[0]).get("id")
     same = [c for c in pool if c["_model_id"] == model_id]
     others = [c for c in pool if base and c["_model_id"] != model_id and c["base_model"] == base]
-    out, seen = [], set()
+    out, seen = [], {exclude_name} if exclude_name else set()
     for c in same + others:
         if (exclude and c["sha256"] == exclude) or c["filename"] in seen:
             continue
@@ -222,12 +226,10 @@ def lookup(filename, budget, status_cb=None):
     """Find ``filename`` (or same-family alternatives) on CivitAI / its archive.
 
     Returns ``{"exact": Candidate | None, "family": [Candidate]}`` or None when
-    nothing was found.
+    nothing was found. A 429 exhausts the shared ``budget``; whatever was found
+    before the lookup stopped is still returned.
     """
-    try:
-        return _lookup(_basename(filename), budget, status_cb)
-    except (_Stop, RateLimited):
-        return None
+    return _lookup(_basename(filename), budget, status_cb)
 
 
 def _fetch(url, budget, status_cb, source, auth=False):
@@ -238,45 +240,63 @@ def _fetch(url, budget, status_cb, source, auth=False):
     return _get_json(url, auth)
 
 
+def _top_model_base(items):
+    """Base model of the top search hit when all its versions agree."""
+    versions = [_dict(v) for v in _list(_dict(items[0]).get("modelVersions"))] if items else []
+    bases = {v.get("baseModel") for v in versions}
+    return bases.pop() if len(bases) == 1 and None not in bases else None
+
+
 def _lookup(wanted, budget, status_cb):
-    wanted_l = wanted.lower()
-    items = []
-    for query in search_queries(wanted):
-        url = f"{CIVITAI_API}/api/v1/models?query={urllib.parse.quote(query)}&limit=5&nsfw=true"
-        items = [i for i in _list(_dict(_fetch(url, budget, status_cb, "civitai_search", True)).get("items"))
-                 if isinstance(i, dict)]
-        if items:
-            break
-
-    pool = _search_candidates(items, "exact")
-    exact = next((c for c in pool if c["filename"].lower() == wanted_l), None)
-    base = exact["base_model"] if exact else None
-
-    if not exact:
-        sha, archive_base = _archive_hash(wanted, budget, status_cb)
-        base = archive_base
-        if sha:
-            exact = next((c for c in pool if c["sha256"] == sha), None)
-            if exact:
-                exact["match"] = "hash"
-            else:
-                data = _fetch(f"{CIVITAI_API}/api/v1/model-versions/by-hash/{sha}",
-                              budget, status_cb, "civitai_hash", True)
-                exact = _by_hash_candidate(data, sha)
-            if not exact:
-                data = _fetch(f"{ARCHIVE_API}/api/sha256/{sha}", budget, status_cb, "civitai_archive")
-                exact = _mirror_candidate(data, sha, archive_base)
-            if exact:
-                base = exact["base_model"] or archive_base
-
-    family = _family(items, exact["sha256"] if exact else None, exact["_model_id"] if exact else None, base)
+    state = {"items": [], "exact": None, "base": None}
+    try:
+        _resolve(wanted, budget, status_cb, state)
+    except RateLimited:
+        budget.exhaust()
+    except _Stop:
+        pass
+    items, exact = state["items"], state["exact"]
+    base = (exact["base_model"] if exact else None) or state["base"] or _top_model_base(items)
+    family = _family(items, exact["sha256"] if exact else None,
+                     exact["_model_id"] if exact else None, base,
+                     exact["filename"] if exact else None)
     if not exact and not family:
         return None
     return {"exact": _public(exact) if exact else None, "family": family}
 
 
+def _resolve(wanted, budget, status_cb, state):
+    wanted_l = wanted.lower()
+    for query in search_queries(wanted):
+        url = f"{CIVITAI_API}/api/v1/models?query={urllib.parse.quote(query)}&limit=5&nsfw=true"
+        state["items"] = [i for i in _list(_dict(_fetch(url, budget, status_cb, "civitai_search", True)).get("items"))
+                          if isinstance(i, dict)]
+        if state["items"]:
+            break
+
+    pool = _search_candidates(state["items"], "exact")
+    exact = next((c for c in pool if c["filename"].lower() == wanted_l), None)
+    state["exact"] = exact
+    if exact:
+        return
+
+    sha, state["base"] = _archive_hash(wanted, budget, status_cb)
+    if not sha:
+        return
+    exact = next((c for c in pool if c["sha256"] == sha), None)
+    if exact:
+        exact["match"] = "hash"
+    else:
+        data = _fetch(f"{CIVITAI_API}/api/v1/model-versions/by-hash/{sha}", budget, status_cb, "civitai_hash", True)
+        exact = _by_hash_candidate(data, sha)
+    if not exact:
+        data = _fetch(f"{ARCHIVE_API}/api/sha256/{sha}", budget, status_cb, "civitai_archive")
+        exact = _mirror_candidate(data, sha, state["base"])
+    state["exact"] = exact
+
+
 def _archive_hash(wanted, budget, status_cb):
-    """Archive search: (sha256 of the file named ``wanted``, base model hint)."""
+    """Archive search: (sha256, base model) of the result named ``wanted``."""
     url = f"{ARCHIVE_API}/api/search?q={urllib.parse.quote(wanted)}"
     results = [r for r in _list(_dict(_fetch(url, budget, status_cb, "civitai_archive")).get("results"))
                if isinstance(r, dict)]
@@ -285,5 +305,4 @@ def _archive_hash(wanted, budget, status_cb):
         if str(r.get("name", "")).lower() == wanted.lower() and isinstance(path, str) \
                 and path.startswith("/sha256/"):
             return path[len("/sha256/"):].lower(), r.get("base_model") or None
-    bases = [r.get("base_model") for r in results if r.get("base_model")]
-    return None, (bases[0] if bases else None)
+    return None, None
