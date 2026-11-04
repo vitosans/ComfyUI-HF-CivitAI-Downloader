@@ -412,16 +412,35 @@ def _snapshot_has_entries(snapshot_data: dict) -> bool:
     return False
 
 
+# Settings that hold credentials: never uploaded to a backup, never overwritten on restore.
+SECRET_SETTING_KEYS = ("downloader.hf_token", "downloader.civitai_token")
+
+
+def _without_secrets(data: dict) -> dict:
+    return {k: v for k, v in data.items() if k not in SECRET_SETTING_KEYS}
+
+
+def _merge_restored_settings(new_settings: dict, existing_settings, hf_token) -> dict:
+    """Restored settings with this machine's secrets kept (HF token falls back to ``hf_token``)."""
+    merged = _without_secrets(new_settings)
+    existing = existing_settings if isinstance(existing_settings, dict) else {}
+    for key in SECRET_SETTING_KEYS:
+        if key in existing:
+            merged[key] = existing[key]
+    if "downloader.hf_token" not in merged:
+        merged["downloader.hf_token"] = hf_token
+    return merged
+
+
 def _copy_settings_without_token(src_file: str, temp_dir: str) -> str:
     dst_file = os.path.join(temp_dir, os.path.basename(src_file))
     shutil.copy2(src_file, dst_file)
     try:
         with open(dst_file, "r", encoding="utf-8") as handle:
             data = json.load(handle)
-        if isinstance(data, dict) and "downloader.hf_token" in data:
-            del data["downloader.hf_token"]
+        if isinstance(data, dict) and any(k in data for k in SECRET_SETTING_KEYS):
             with open(dst_file, "w", encoding="utf-8") as handle:
-                json.dump(data, handle, indent=2)
+                json.dump(_without_secrets(data), handle, indent=2)
     except Exception as e:
         print(f"[WARNING] Failed to sanitize settings file '{src_file}': {e}")
     return dst_file
@@ -500,7 +519,7 @@ def get_token_and_size_limit():
 
 def _copy_and_strip_token(src_folder, temp_dir):
     """
-    Copy src_folder to temp_dir, removing 'downloader.hf_token' from any comfy.settings.json found.
+    Copy src_folder to temp_dir, removing SECRET_SETTING_KEYS from any comfy.settings.json found.
     Also migrates ComfyUI-Manager legacy paths to the new structure.
     Returns the path to the copied folder.
     """
@@ -533,11 +552,10 @@ def _copy_and_strip_token(src_folder, temp_dir):
                 try:
                     with open(fpath, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                    if "downloader.hf_token" in data:
-                        del data["downloader.hf_token"]
+                    if isinstance(data, dict) and any(k in data for k in SECRET_SETTING_KEYS):
                         with open(fpath, "w", encoding="utf-8") as f:
-                            json.dump(data, f, indent=2)
-                        print(f"[INFO] Stripped downloader.hf_token from {fpath}")
+                            json.dump(_without_secrets(data), f, indent=2)
+                        print(f"[INFO] Stripped downloader tokens from {fpath}")
                 except Exception as e:
                     print(f"[WARNING] Could not clean token from {fpath}: {e}")
     return dst_folder
@@ -1196,11 +1214,8 @@ def restore_from_huggingface(repo_name_or_link, target_dir=None):
                                         with open(src_file, "r", encoding="utf-8") as f:
                                             new_settings = json.load(f)
                                         
-                                        # Preserve token
-                                        if "downloader.hf_token" in existing_settings:
-                                            new_settings["downloader.hf_token"] = existing_settings["downloader.hf_token"]
-                                        else:
-                                            new_settings["downloader.hf_token"] = token
+                                        # Preserve this machine's tokens
+                                        new_settings = _merge_restored_settings(new_settings, existing_settings, token)
                                         
                                         with open(dst_file, "w", encoding="utf-8") as f:
                                             json.dump(new_settings, f, indent=2)
@@ -1758,10 +1773,7 @@ def _copy_repo_file_to_target(src_file: str, repo_file: str, target_dir: str, to
                 existing_settings = {}
         with open(src_file, "r", encoding="utf-8") as handle:
             new_settings = json.load(handle)
-        if isinstance(existing_settings, dict) and "downloader.hf_token" in existing_settings:
-            new_settings["downloader.hf_token"] = existing_settings["downloader.hf_token"]
-        else:
-            new_settings["downloader.hf_token"] = token
+        new_settings = _merge_restored_settings(new_settings, existing_settings, token)
         with open(dst_file, "w", encoding="utf-8") as handle:
             json.dump(new_settings, handle, indent=2)
         return
