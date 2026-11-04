@@ -898,8 +898,9 @@ def run_download_url(url: str,
                         print("[DEBUG] Empty placeholder found, deleting before direct URL download.")
                         _safe_remove(dest_path)
                     elif overwrite:
-                        print("[DEBUG] Overwrite requested, deleting existing file before direct URL download.")
-                        _safe_remove(dest_path)
+                        # Keep the old file until the new one is complete and verified;
+                        # os.replace below swaps it in atomically.
+                        print("[DEBUG] Overwrite requested; existing file is replaced after download.")
                     else:
                         existing_size = os.path.getsize(dest_path)
                         size_gb = existing_size / (1024 ** 3)
