@@ -389,5 +389,143 @@ class TestBudget(unittest.TestCase):
         self.assertFalse(cd.Budget(max_requests=5, deadline_s=0).spend())
 
 
+def _cand(**kw):
+    base = {
+        "filename": "moody_v9.safetensors", "url": "https://civitai.com/api/download/models/1",
+        "sha256": "a" * 64, "size_bytes": int(13.5 * 1024 ** 3), "base_model": "Krea 2",
+        "version_name": "V8.0", "model_name": "Moody Krea 2 Mix - V9 is here", "nsfw": True,
+        "site": "civitai", "match": "exact", "civitai_type": "Model",
+    }
+    base.update(kw)
+    return base
+
+
+class TestSearchMissing(unittest.TestCase):
+    def setUp(self):
+        p = patch.object(dl, "civitai_search_enabled", return_value=True)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def _run(self, rows, result, **kw):
+        kw.setdefault("skip_all", False)
+        kw.setdefault("skip_filenames", set())
+        kw.setdefault("request_id", None)
+        with patch.object(cd, "lookup", return_value=result) as lk:
+            cd.search_missing(rows, **kw)
+        return lk
+
+    def test_unresolved_row_gets_civitai_url(self):
+        rows = [{"filename": "moody_v9.safetensors"}]
+        self._run(rows, {"exact": _cand(), "family": []})
+        r = rows[0]
+        self.assertEqual(r["filename"], "moody_v9.safetensors")
+        self.assertEqual(r["url"], "https://civitai.com/api/download/models/1")
+        self.assertEqual(r["sha256"], "a" * 64)
+        self.assertEqual(r["source"], "civitai")
+
+    def test_archive_exact_sets_archive_source(self):
+        rows = [{"filename": "x.safetensors"}]
+        self._run(rows, {"exact": _cand(site="civitai_archive"), "family": []})
+        self.assertEqual(rows[0]["source"], "civitai_archive")
+
+    def _hf_row(self):
+        return {"filename": "moody_v9.safetensors", "url": "https://huggingface.co/a/b/resolve/main/m.safetensors",
+                "hf_repo": "a/b", "hf_path": "m.safetensors", "source": "huggingface_search",
+                "alternatives": [{"filename": "old", "url": "u", "source": "popular_models"}]}
+
+    def test_hf_row_keeps_hf_primary_and_gets_alternative(self):
+        for sha, tail in (("a" * 64, "same file"), ("b" * 64, "different file")):
+            rows = [self._hf_row()]
+            self._run(rows, {"exact": _cand(), "family": []}, hf_sha256=lambda repo, path, s=sha: s)
+            r = rows[0]
+            self.assertTrue(r["url"].startswith("https://huggingface.co/"))
+            self.assertEqual(r["source"], "huggingface_search")
+            self.assertEqual(len(r["alternatives"]), 2)
+            alt = r["alternatives"][1]
+            self.assertEqual(alt["source"], "civitai")
+            self.assertTrue(alt["label"].endswith(tail), alt["label"])
+
+    def test_label_format(self):
+        rows = [self._hf_row()]
+        self._run(rows, {"exact": _cand(), "family": []}, hf_sha256=lambda r, p: None)
+        self.assertEqual(rows[0]["alternatives"][1]["label"],
+                         "CivitAI \u00b7 Moody Krea 2 Mix - V9 is here V8.0 \u00b7 13.5 GB \u00b7 Krea 2 \u00b7 NSFW")
+
+    def test_archive_label_and_unknown_parts_omitted(self):
+        rows = [{"filename": "q.safetensors"}]
+        fam = _cand(site="civitai_archive", size_bytes=None, base_model=None, nsfw=False,
+                    version_name="", model_name="M", match="family")
+        self._run(rows, {"exact": None, "family": [fam]})
+        self.assertEqual(rows[0]["alternatives"][0]["label"], "CivitAI Archive \u00b7 M")
+
+    def test_family_alternatives_keep_real_filename(self):
+        rows = [{"filename": "moody_v9.safetensors", "suggested_folder": "diffusion_models"}]
+        fams = [_cand(filename=f"real_{i}.safetensors", match="family", url=f"https://civitai.com/d/{i}")
+                for i in range(2)]
+        self._run(rows, {"exact": None, "family": fams})
+        r = rows[0]
+        self.assertNotIn("url", r)
+        self.assertEqual([a["filename"] for a in r["alternatives"]], ["real_0.safetensors", "real_1.safetensors"])
+        self.assertEqual(r["alternatives"][0]["suggested_folder"], "diffusion_models")
+        self.assertEqual(r["alternatives"][0]["url"], "https://civitai.com/d/0")
+
+    def test_non_hf_url_untouched(self):
+        rows = [{"filename": "a.safetensors", "url": "https://example.com/a.safetensors"}]
+        lk = self._run(rows, {"exact": _cand(), "family": [_cand(match="family")]})
+        self.assertEqual(rows, [{"filename": "a.safetensors", "url": "https://example.com/a.safetensors"}])
+        lk.assert_not_called()
+
+    def test_skip_all_makes_no_lookup(self):
+        lk = self._run([{"filename": "a.safetensors"}], None, skip_all=True)
+        lk.assert_not_called()
+
+    def test_skip_filename_respected(self):
+        lk = self._run([{"filename": "A.safetensors"}], None, skip_filenames={"a.safetensors"})
+        lk.assert_not_called()
+
+    def test_disabled_setting_makes_no_lookup(self):
+        with patch.object(dl, "civitai_search_enabled", return_value=False):
+            lk = self._run([{"filename": "a.safetensors"}], None)
+        lk.assert_not_called()
+
+    def test_no_result_leaves_row(self):
+        rows = [{"filename": "a.safetensors"}]
+        self._run(rows, None)
+        self.assertEqual(rows, [{"filename": "a.safetensors"}])
+
+    def test_rate_limit_stops_remaining_lookups(self):
+        budget_seen = []
+
+        def fake(name, budget, status_cb=None):
+            budget_seen.append(budget)
+            budget.exhaust()
+            return None
+
+        rows = [{"filename": "a.safetensors"}, {"filename": "b.safetensors"}]
+        with patch.object(cd, "lookup", fake):
+            cd.search_missing(rows, skip_all=False, skip_filenames=set(), request_id=None)
+        self.assertEqual(len(budget_seen), 1)
+
+    def test_status_callback_receives_dict(self):
+        events = []
+
+        def fake(name, budget, status_cb=None):
+            status_cb("civitai_search")
+            return None
+
+        with patch.object(cd, "lookup", fake):
+            cd.search_missing([{"filename": "a.safetensors"}], skip_all=False, skip_filenames=set(),
+                              request_id=None, status_cb=events.append)
+        self.assertEqual(events[0]["source"], "civitai_search")
+        self.assertEqual(events[0]["filename"], "a.safetensors")
+
+    def test_nothing_missing_no_lookup(self):
+        import ComfyUI_HuggingFace_Downloader.model_discovery as md
+        with patch.object(md, "check_model_files", return_value=([], [], [])), \
+                patch.object(cd, "search_missing") as sm:
+            md.process_workflow_for_missing_models({"prefilled_missing_models": []})
+        sm.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()

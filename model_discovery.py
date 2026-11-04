@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Tuple
 from types import SimpleNamespace
 from huggingface_hub import HfApi
 from .downloader import get_token
+from . import civitai_discovery
 from .parse_link import parse_link
 import folder_paths
 
@@ -4162,6 +4163,20 @@ def process_workflow_for_missing_models(workflow_json: Dict[str, Any], status_cb
         if priority_author_repos is None:
             _run_hf_stage("priority", "priority")
 
+    if missing_models:
+        try:
+            civitai_discovery.search_missing(
+                missing_models,
+                skip_all=skip_hf_search_all,
+                skip_filenames=skip_filenames,
+                request_id=request_id,
+                status_cb=status_cb,
+            )
+        except SearchCancelledException:
+            raise
+        except Exception as e:
+            print(f"[CivitAI] lookup failed, continuing without it: {e}")
+
     final_missing = missing_models
     enforce_authoritative_node_folders(final_missing)
     enforce_authoritative_node_folders(existing_models)
@@ -4182,7 +4197,7 @@ def process_workflow_for_missing_models(workflow_json: Dict[str, Any], status_cb
                 ],
             )
             if alternatives:
-                model["alternatives"] = alternatives
+                model["alternatives"] = (model.get("alternatives") or []) + alternatives
 
     return {
         "missing": final_missing,

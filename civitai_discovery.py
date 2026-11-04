@@ -306,3 +306,110 @@ def _archive_hash(wanted, budget, status_cb):
                 and path.startswith("/sha256/"):
             return path[len("/sha256/"):].lower(), r.get("base_model") or None
     return None, None
+
+
+def _is_hf_url(url):
+    return _host(url or "") in ("huggingface.co", "www.huggingface.co") or _host(url or "").endswith(".huggingface.co")
+
+
+def _default_hf_sha256(repo, path):
+    from .downloader import get_remote_file_metadata, get_token
+    return get_remote_file_metadata(repo, path, token=get_token())[1]
+
+
+def _label(candidate, relation=None):
+    first = "CivitAI Archive" if candidate.get("site") == "civitai_archive" else "CivitAI"
+    name = " ".join(p for p in (candidate.get("model_name"), candidate.get("version_name")) if p)
+    size = candidate.get("size_bytes")
+    parts = [first, name,
+             f"{size / 1024 ** 3:.1f} GB" if size else "",
+             candidate.get("base_model") or "",
+             "NSFW" if candidate.get("nsfw") else "",
+             relation or ""]
+    return " · ".join(p for p in parts if p)
+
+
+def _alternative(candidate, folder, relation=None):
+    alt = {
+        "filename": candidate["filename"],
+        "url": candidate["url"],
+        "sha256": candidate.get("sha256"),
+        "source": candidate.get("site", "civitai"),
+        "label": _label(candidate, relation),
+    }
+    if folder:
+        alt["suggested_folder"] = folder
+    return alt
+
+
+def _append_alternatives(row, alts):
+    existing = row.get("alternatives") if isinstance(row.get("alternatives"), list) else []
+    urls = {a.get("url") for a in existing if isinstance(a, dict)}
+    row["alternatives"] = existing + [a for a in alts if a["url"] not in urls]
+
+
+def _same_file_relation(row, exact, hf_sha256):
+    if not exact.get("sha256") or not row.get("hf_repo") or not row.get("hf_path"):
+        return None
+    try:
+        hf_sha = hf_sha256(row["hf_repo"], row["hf_path"])
+    except Exception:
+        return None
+    if not hf_sha:
+        return None
+    return "same file" if hf_sha.lower() == exact["sha256"] else "different file"
+
+
+def _apply_result(row, result, hf_sha256):
+    exact, family = result.get("exact"), result.get("family") or []
+    folder = row.get("suggested_folder")
+    alts = []
+    if exact and exact.get("url"):
+        if not row.get("url"):
+            row["url"] = exact["url"]
+            row["sha256"] = exact.get("sha256")
+            row["source"] = exact.get("site", "civitai")
+        else:
+            alts.append(_alternative(exact, folder, _same_file_relation(row, exact, hf_sha256)))
+    alts.extend(_alternative(c, folder) for c in family if c.get("url"))
+    if alts:
+        _append_alternatives(row, alts)
+
+
+def search_missing(models, *, skip_all, skip_filenames, request_id, status_cb=None, hf_sha256=None):
+    """Offer CivitAI matches for missing ``models`` (rows are mutated in place).
+
+    Unresolved rows get the exact match as their URL; rows with a Hugging Face
+    URL keep it and get CivitAI as an alternative. Other URLs are untouched.
+    """
+    from .downloader import civitai_search_enabled
+    if skip_all or not civitai_search_enabled():
+        return
+    from . import model_discovery as md  # lazy: model_discovery imports this module
+    hf_sha256 = hf_sha256 or _default_hf_sha256
+    budget = Budget()
+    for row in models:
+        name = row.get("filename") or ""
+        url = row.get("url")
+        if not name or (url and not _is_hf_url(url)):
+            continue
+        if request_id and md.is_search_cancelled(request_id):
+            raise md.SearchCancelledException("Search cancelled by user")
+        if name.lower() in skip_filenames or (request_id and md.is_model_skipped(request_id, name)):
+            continue
+        if budget.remaining <= 0:
+            break
+        if request_id:
+            md.set_current_searching_model(request_id, name)
+
+        def report(source, name=name):
+            if status_cb:
+                status_cb({"message": f"Searching CivitAI for {name}", "source": source, "filename": name})
+
+        try:
+            result = lookup(name, budget, report)
+        finally:
+            if request_id:
+                md.set_current_searching_model(request_id, None)
+        if result:
+            _apply_result(row, result, hf_sha256)
