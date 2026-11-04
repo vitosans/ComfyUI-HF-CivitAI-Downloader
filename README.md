@@ -62,6 +62,17 @@ ComfyUI node pack and UI tools for:
 - Handles custom node snapshots with `comfy-cli` (`custom_nodes_snapshot.yaml`).
 - Strips `downloader.hf_token` from backed-up settings and preserves local token on restore.
 
+#### CivitAI lookup
+
+After the Hugging Face search, models still missing are looked up on CivitAI (civitai.com API; civitai.green/.red share it) by the words in the filename, then on civitaiarchive.com by old filename, then sha256, then CivitAI by-hash, then archive mirrors.
+
+- Exact or sha256-proven matches keep the workflow filename.
+- Otherwise same-model/same-base "family" options appear under Alternatives, labelled with version, size, base model, NSFW and whether the file is the same or different from the Hugging Face one.
+- When both exist, Hugging Face stays preselected. Nothing downloads without a click.
+- Downloads with a known sha256 are verified and rejected on mismatch.
+- The API key is only sent to CivitAI hosts and is not forwarded on redirects.
+- Budget: 40 requests / 45 s per scan. Lookups follow the same skip switches as the Hugging Face search.
+
 ## Web API Endpoints
 
 - `GET /folder_structure`
@@ -92,6 +103,8 @@ Configured in ComfyUI settings:
 
 - `downloader.hf_token` (Hugging Face token)
 - `downloader.auto_open_missing_models_on_run` (after Run, auto-opens downloader only when native ComfyUI missing-models dialog appears)
+- `downloader.civitai_token` (CivitAI API key; falls back to env `CIVITAI_API_TOKEN`, then ComfyUI-Lora-Manager's saved key)
+- `downloader.civitai_search_enabled` (CivitAI lookup for missing models, default on)
 - `downloaderbackup.repo_name` (target HF repo for backup/restore)
 - `downloaderbackup.file_size_limit` (max single file size in GB for backup)
 
