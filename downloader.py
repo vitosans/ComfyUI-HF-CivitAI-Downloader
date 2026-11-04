@@ -794,6 +794,19 @@ CIVITAI_AUTH_MESSAGE = (
 )
 
 
+CIVITAI_KEY_REJECTED_MESSAGE = (
+    "CivitAI rejected your API key for this file \u2014 check it in Settings \u2192 "
+    "Hugging Face Download & Backup \u2192 CivitAI API key"
+)
+
+
+def _is_civitai_host(url: str) -> bool:
+    host = (urllib.parse.urlparse(str(url or "")).hostname or "").lower()
+    if host.startswith("www."):
+        host = host[4:]
+    return host in CIVITAI_HOSTS
+
+
 class _DownloadRejected(RuntimeError):
     """Non-retryable direct-download failure whose message is shown verbatim."""
 
@@ -993,9 +1006,12 @@ def run_download_url(url: str,
         except Exception as e:
             if temp_path:
                 _safe_remove(temp_path)
-            if (is_civitai and isinstance(e, urllib.error.HTTPError)
-                    and int(getattr(e, "code", 0) or 0) in (401, 403)):
-                raise _DownloadRejected(CIVITAI_AUTH_MESSAGE) from e
+            if (isinstance(e, urllib.error.HTTPError)
+                    and int(getattr(e, "code", 0) or 0) in (401, 403)
+                    and _is_civitai_host(getattr(e, "url", None) or e.geturl() or raw_url)):
+                raise _DownloadRejected(
+                    CIVITAI_KEY_REJECTED_MESSAGE if civitai_token else CIVITAI_AUTH_MESSAGE
+                ) from e
             last_error = e
             if attempt >= retry_count or not _is_retryable_url_error(e):
                 break

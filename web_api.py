@@ -567,6 +567,9 @@ def _build_retry_payload(item: dict) -> dict:
         payload["target_filename"] = target_filename
     if item.get("overwrite"):
         payload["overwrite"] = True
+    sha = str(item.get("sha256") or "").strip()
+    if sha:
+        payload["sha256"] = sha
     return payload
 
 

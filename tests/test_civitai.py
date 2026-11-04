@@ -603,13 +603,43 @@ class TestDirectDownload(unittest.TestCase):
         self._run("https://cdn.example/x", expected_sha256="not-a-hash")
         self.assertTrue(os.path.exists(os.path.join(self.tmp.name, "m.safetensors")))
 
-    def test_civitai_401_gives_api_key_message(self):
+    def _http_error(self, code, url):
         import urllib.error
-        err = urllib.error.HTTPError("https://civitai.com/api/download/models/1", 401, "no", {}, None)
-        with patch.object(dl.urllib.request, "urlopen", side_effect=err):
+        return urllib.error.HTTPError(url, code, "no", {}, None)
+
+    def _fail(self, code, url, err_url=None, token="k"):
+        err = self._http_error(code, err_url or url)
+        with patch.object(dl, "get_civitai_token", return_value=token), \
+                patch.object(dl.urllib.request, "urlopen", side_effect=err) as uo:
             with self.assertRaises(RuntimeError) as ctx:
-                dl.run_download_url("https://civitai.com/api/download/models/1", "loras", sync=True)
-        self.assertIn("CivitAI needs an API key", str(ctx.exception))
+                dl.run_download_url(url, "loras", sync=True)
+        return str(ctx.exception), uo.call_count
+
+    def test_civitai_401_403_no_key_message_no_retry(self):
+        u = "https://civitai.com/api/download/models/1"
+        for code in (401, 403):
+            msg, calls = self._fail(code, u, token="")
+            self.assertIn("CivitAI needs an API key", msg)
+            self.assertEqual(calls, 1)
+
+    def test_civitai_401_403_with_key_says_rejected(self):
+        u = "https://civitai.com/api/download/models/1"
+        for code in (401, 403):
+            msg, calls = self._fail(code, u, token="k")
+            self.assertIn("CivitAI rejected your API key", msg)
+            self.assertEqual(calls, 1)
+
+    def test_cdn_403_after_redirect_not_reported_as_key_problem(self):
+        msg, _ = self._fail(403, "https://civitai.com/api/download/models/1",
+                            err_url="https://cdn.example/expired", token="k")
+        self.assertNotIn("API key", msg)
+
+    def test_retry_payload_keeps_sha256(self):
+        import ComfyUI_HuggingFace_Downloader.web_api as wa
+        payload = wa._build_retry_payload({"url": "https://civitai.com/api/download/models/1",
+                                           "folder": "loras", "sha256": "ab" * 32})
+        self.assertEqual(payload["sha256"], "ab" * 32)
+        self.assertNotIn("sha256", wa._build_retry_payload({"url": "https://x/y", "folder": "loras"}))
 
 
 if __name__ == "__main__":
