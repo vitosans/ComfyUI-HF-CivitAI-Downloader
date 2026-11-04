@@ -3434,6 +3434,7 @@ app.registerExtension({
                         requestedPath: m.requested_path || m.filename,
                         initialWidgetValue: m.requested_path || m.filename,
                         resolvedUrl: m.url || "",
+                        sha256: m.sha256 || "",
                         urlInput: urlInput,
                         folderInput: folderPicker.input,
                         nameEl: nameEl,
@@ -3448,6 +3449,9 @@ app.registerExtension({
                             : "",
                     };
                     rowInputs.push(rowData);
+                    urlInput.addEventListener("change", () => {
+                        rowData.sha256 = "";
+                    });
 
                     if (downloadMode !== "folder" && Array.isArray(m.alternatives) && m.alternatives.length > 0) {
                         const altToggle = document.createElement("button");
@@ -3487,7 +3491,7 @@ app.registerExtension({
                             const altLabel = document.createElement("div");
                             altLabel.style.fontSize = "12px";
                             altLabel.style.color = "var(--descrip-text, #999)";
-                            altLabel.textContent = `${alt.filename}${alt.source ? " • " + alt.source : ""}`;
+                            altLabel.textContent = alt.label || `${alt.filename}${alt.source ? " • " + alt.source : ""}`;
 
                             const useBtn = document.createElement("button");
                             useBtn.textContent = "Use";
@@ -3504,6 +3508,7 @@ app.registerExtension({
 
                             useBtn.onclick = () => {
                                 rowData.filename = alt.filename || rowData.filename;
+                                rowData.sha256 = alt.sha256 || "";
                                 if (alt.url) {
                                     rowData.urlInput.value = alt.url;
                                     rowData.resolvedUrl = alt.url;
@@ -3794,6 +3799,7 @@ app.registerExtension({
                         display_name: r.displayName || r.requestedPath || r.filename,
                         requested_path: r.requestedPath || r.filename,
                         url: r.urlInput.value.trim(),
+                        sha256: r.sha256 || "",
                         folder: effectiveFolder,
                         folder_locked: Boolean(r.folderLocked),
                         locked_folder: r.lockedFolder || "",
