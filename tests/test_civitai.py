@@ -78,3 +78,27 @@ class TestCivitaiSettings(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+import ComfyUI_HuggingFace_Downloader.civitai_discovery as cd
+
+
+class TestSearchQueries(unittest.TestCase):
+    def test_camel_case_and_digits_split_into_words(self):
+        qs = cd.search_queries("moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors")
+        self.assertEqual(qs[0], "moody krea 2 mix uncensored v8se goes")
+        self.assertIn("moody krea 2 mix", qs)
+
+    def test_basename_with_backslashes(self):
+        self.assertEqual(cd.search_queries("Krea2\\sub/foo_bar_v1.safetensors")[0], "foo bar")
+
+    def test_precision_and_format_tokens_dropped(self):
+        self.assertEqual(cd.search_queries("cyberrealistic_v90_fp8_e4m3fn.gguf")[0], "cyberrealistic")
+
+    def test_too_short_yields_nothing(self):
+        self.assertEqual(cd.search_queries("x.safetensors"), [])
+
+    def test_max_three_deduped_queries(self):
+        qs = cd.search_queries("moodyKrea2MixUncensoredV8SEGoes.safetensors")
+        self.assertLessEqual(len(qs), 3)
+        self.assertEqual(len(qs), len(set(qs)))
