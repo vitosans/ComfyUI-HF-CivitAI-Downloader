@@ -64,7 +64,7 @@ ComfyUI node pack and UI tools for:
 
 #### CivitAI lookup
 
-After the Hugging Face search, models still missing are looked up on CivitAI (civitai.com API; civitai.green/.red share it) by the words in the filename, then on civitaiarchive.com by old filename, then sha256, then CivitAI by-hash, then archive mirrors.
+After the Hugging Face search, models still missing are looked up on CivitAI (civitai.com API; civitai.green/.red share it) by the words in the filename (and by each part after the first `_`, since creators often put their brand first; it keeps searching until one result holds the exact file), then on civitaiarchive.com by old filename, then sha256, then CivitAI by-hash, then archive mirrors.
 
 - Exact or sha256-proven matches keep the workflow filename. Generic names (`model.safetensors`, `pytorch_lora_weights.safetensors`, ...) only count as exact when the archive confirms the sha256.
 - Otherwise same-model/same-base "family" options appear under Alternatives, labelled with model, version, filename, size, base model and NSFW. Family options of a CivitAI type that does not fit the target folder (e.g. a Checkpoint for `loras`) are dropped.

@@ -1,0 +1,582 @@
+{
+ "items": [
+  {
+   "id": 1213593,
+   "name": "TeeKay's Titty Time (TKTT) | Checkpoint Merge",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": false,
+   "allowCommercialUse": [
+    "RentCivit"
+   ],
+   "allowDerivatives": false,
+   "allowDifferentLicense": false,
+   "type": "Checkpoint",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": true,
+   "nsfwLevel": 60,
+   "availability": "Public",
+   "userId": 108336,
+   "hasActivePaidAccess": false,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Flux.1 D"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 1732926,
+     "index": 0,
+     "name": "v0.5beta GGUF Q4",
+     "baseModel": "Flux.1 D",
+     "baseModelType": "Standard",
+     "publishedAt": "2025-05-01T17:32:34.910Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 60,
+     "vaeId": null,
+     "coveredNext": false,
+     "paidAccess": null,
+     "supportsGeneration": false,
+     "files": [
+      {
+       "id": 1633490,
+       "sizeKB": 6640447.15625,
+       "name": "teekaysTittyTimeTKTT_v05betaGGUFQ4.gguf",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2025-05-01T17:24:08.610Z",
+       "metadata": {
+        "format": "GGUF",
+        "size": "full",
+        "fp": "fp8"
+       },
+       "hashes": {
+        "AutoV1": "57C8FCDF",
+        "AutoV2": "0477026F14",
+        "SHA256": "0477026F145779EC04F5BEBCD781BBABDB99AE2158D457F174BDE73797FC215A",
+        "CRC32": "6F5F4EED",
+        "BLAKE3": "8FA59E9CF9E9C0F067A4D94961763B5DFE809B046E685074DAFFCE7F7A2CF388",
+        "AutoV3": "2CD27817CAF5",
+        "SHA256_12": "0477026F1457"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/1732926",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/1732926"
+    },
+    {
+     "id": 1549325,
+     "index": 1,
+     "name": "v0.5beta fp8",
+     "baseModel": "Flux.1 D",
+     "baseModelType": "Standard",
+     "publishedAt": "2025-03-18T18:08:45.383Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 60,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": false,
+     "files": [
+      {
+       "id": 1449151,
+       "sizeKB": 11622579.390625,
+       "name": "teekaysTittyTimeTKTT_v05betaFp8.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2025-03-18T17:47:18.219Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": "full",
+        "fp": "fp8"
+       },
+       "hashes": {
+        "AutoV1": "AA96E354",
+        "AutoV2": "74F76FBCA0",
+        "SHA256": "74F76FBCA0FB3E7679F9821B69B5F99690A37215D8EECFA4B11CD1819A29C8F8",
+        "CRC32": "945E6FAE",
+        "BLAKE3": "05118585594CAAF626046809F91EE78453080D6621A3DBEBF9265FE33DB720EC",
+        "AutoV3": "08F074A14B12",
+        "SHA256_12": "74F76FBCA0FB"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/1549325",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/1549325"
+    }
+   ]
+  },
+  {
+   "id": 1046666,
+   "name": "TeeKay's Titty Time - Entire Collection | Flux",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": true,
+   "allowCommercialUse": [
+    "RentCivit",
+    "Rent"
+   ],
+   "allowDerivatives": true,
+   "allowDifferentLicense": false,
+   "type": "LORA",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": true,
+   "nsfwLevel": 60,
+   "availability": "Public",
+   "userId": 108336,
+   "hasActivePaidAccess": false,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Flux.1 D"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 1174357,
+     "index": 0,
+     "name": "v1.0",
+     "baseModel": "Flux.1 D",
+     "baseModelType": "Standard",
+     "publishedAt": "2024-12-17T16:26:41.680Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 60,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 1079587,
+       "sizeKB": 65748.38671875,
+       "name": "TKTittyTimeMaster_rank16_bf16.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2024-12-17T16:26:31.242Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": null,
+        "fp": null
+       },
+       "hashes": {
+        "AutoV1": "9CD1FEE6",
+        "AutoV2": "42C9BEDBF5",
+        "SHA256": "42C9BEDBF5B5B39E5D53271BC13A17CC17FFF98B8E941AA3329B7E90CB01763C",
+        "CRC32": "D6609BF3",
+        "BLAKE3": "AECDAF374C4BFF1E4FA40B4D828EA9DD5D069F93CEE607686D4FE2B0FADA6A49",
+        "AutoV3": "01821DABD52F",
+        "SHA256_12": "42C9BEDBF5B5"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/1174357",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/1174357"
+    }
+   ]
+  },
+  {
+   "id": 1481152,
+   "name": "TeeKay's Prompt-able Titty Mix (TKPT) | Checkpoint Merge",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": false,
+   "allowCommercialUse": [
+    "Image",
+    "RentCivit"
+   ],
+   "allowDerivatives": false,
+   "allowDifferentLicense": false,
+   "type": "Checkpoint",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": true,
+   "nsfwLevel": 60,
+   "availability": "Public",
+   "userId": 108336,
+   "hasActivePaidAccess": false,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Flux.1 D"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 1750291,
+     "index": 0,
+     "name": "v0.5beta GGUF Q4",
+     "baseModel": "Flux.1 D",
+     "baseModelType": "Standard",
+     "publishedAt": "2025-05-05T15:20:55.329Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 60,
+     "vaeId": null,
+     "coveredNext": false,
+     "paidAccess": null,
+     "supportsGeneration": false,
+     "files": [
+      {
+       "id": 1651021,
+       "sizeKB": 6640447.15625,
+       "name": "teekaysPromptAbleTittyMix_v05betaGGUFQ4.gguf",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2025-05-05T15:23:01.269Z",
+       "metadata": {
+        "format": "GGUF",
+        "size": "full",
+        "fp": "fp8"
+       },
+       "hashes": {
+        "AutoV1": "3C99038A",
+        "AutoV2": "D4A93C587F",
+        "SHA256": "D4A93C587F0D4E9A4C56F19D5E7CD276A27A8B52168F95688890ED6C40496C72",
+        "CRC32": "F6F139AF",
+        "BLAKE3": "AD32179D54367AED28D6D84640E90FFC69E37ED2273E85A91D92938866FD0699",
+        "AutoV3": "1225C9B055B8",
+        "SHA256_12": "D4A93C587F0D"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/1750291",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/1750291"
+    },
+    {
+     "id": 1675350,
+     "index": 1,
+     "name": "v0.50beta fp8",
+     "baseModel": "Flux.1 D",
+     "baseModelType": "Standard",
+     "publishedAt": "2025-04-17T21:04:16.189Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 60,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": false,
+     "files": [
+      {
+       "id": 1576306,
+       "sizeKB": 11622579.2109375,
+       "name": "teekaysPromptAbleTittyMix_v050betaFp8.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2025-04-17T20:24:29.960Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": "full",
+        "fp": "fp8"
+       },
+       "hashes": {
+        "AutoV1": "E320A530",
+        "AutoV2": "32412C716A",
+        "SHA256": "32412C716A30C3C92E1B258B760AE905EB989BE47E5FAB4E34D7D75ED1449398",
+        "CRC32": "5657654C",
+        "BLAKE3": "6ED8E1E914E5D987FD4440508FCBDAE6122AA1F8BA007FA6D9ECE71AB4BCCFF7",
+        "AutoV3": "B1170BBAA5D5",
+        "SHA256_12": "32412C716A30"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/1675350",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/1675350"
+    }
+   ]
+  },
+  {
+   "id": 1981298,
+   "name": "Teekay's Custom Characters | A-D Part 2: Electric Boogaloo",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": false,
+   "allowCommercialUse": [
+    "RentCivit"
+   ],
+   "allowDerivatives": false,
+   "allowDifferentLicense": false,
+   "type": "LORA",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": false,
+   "nsfwLevel": 31,
+   "availability": "Public",
+   "userId": 108336,
+   "hasActivePaidAccess": false,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Krea 2",
+    "ZImageTurbo",
+    "Flux.1 D"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 3375434,
+     "index": 0,
+     "name": "Dahlia v2.0 Krea2",
+     "baseModel": "Krea 2",
+     "baseModelType": "Standard",
+     "publishedAt": "2026-10-03T23:16:01.358Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 15,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 3263700,
+       "sizeKB": 223231.359375,
+       "name": "Character_Mix_DahliaMixer_Kr2.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": null,
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2026-10-01T20:12:10.257Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "fp": "bf16",
+        "isRequired": false
+       },
+       "hashes": {
+        "AutoV1": "0E16FB08",
+        "AutoV2": "562ABEC803",
+        "SHA256": "562ABEC803FE7545D6DECC7EDAD1ED03262A0A6CA76A288751F4CA62366DB92F",
+        "CRC32": "1BEEB7BA",
+        "BLAKE3": "47640CC6D82CC15F90D6961E36DB49541239FAEECF28275C7D5A09C57A3536E3",
+        "AutoV3": "7E42F3FF1A77",
+        "SHA256_12": "562ABEC803FE"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/3375434",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/3375434"
+    },
+    {
+     "id": 2498466,
+     "index": 1,
+     "name": "Dahlia v2.0 ZiT",
+     "baseModel": "ZImageTurbo",
+     "baseModelType": "Standard",
+     "publishedAt": "2025-12-14T01:09:52.897Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 7,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 2386520,
+       "sizeKB": 166140.9296875,
+       "name": "Character_Mix_DahliaMixerV2_ZIT.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2025-12-13T05:55:29.692Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": null,
+        "fp": "bf16"
+       },
+       "hashes": {
+        "AutoV1": "4B46D2C0",
+        "AutoV2": "BD3B6ACD60",
+        "SHA256": "BD3B6ACD6032F59CEA4D05EA0D40BCB2D4638609973BE4685CE2A0EE63EE8771",
+        "CRC32": "40E5518D",
+        "BLAKE3": "0B3393F8BD23150DB584BDC1A0AD65583FB090A5603F8261F58161C3247C1961",
+        "AutoV3": "5B67A1DFE641",
+        "SHA256_12": "BD3B6ACD6032"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/2498466",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/2498466"
+    }
+   ]
+  },
+  {
+   "id": 2009347,
+   "name": "Teekay's Custom Characters | ZIT + Flux | E-H Part Deux",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": false,
+   "allowCommercialUse": [
+    "RentCivit"
+   ],
+   "allowDerivatives": false,
+   "allowDifferentLicense": false,
+   "type": "LORA",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": false,
+   "nsfwLevel": 15,
+   "availability": "Public",
+   "userId": 108336,
+   "hasActivePaidAccess": true,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Krea 2",
+    "ZImageTurbo",
+    "Flux.1 D"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 3449955,
+     "index": 0,
+     "name": "Farrah v2.0 - Kr2",
+     "baseModel": "Krea 2",
+     "baseModelType": "Standard",
+     "publishedAt": "2026-11-04T04:33:19.996Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 15,
+     "vaeId": null,
+     "coveredNext": true,
+     "earlyAccessDeadline": "2026-11-11T04:33:19.996Z",
+     "paidAccess": {
+      "permanent": false,
+      "endsAt": "2026-11-11T04:33:19.996Z"
+     },
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 3349746,
+       "sizeKB": 223231.4296875,
+       "name": "Character_Mix_FarrahMixerV2_Kr2.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": null,
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2026-11-04T04:30:58.829Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "fp": "bf16",
+        "isRequired": false
+       },
+       "hashes": {
+        "AutoV1": "561E9DA3",
+        "AutoV2": "98ED8DAEDD",
+        "SHA256": "98ED8DAEDDB5AAB3AD4AC1445BF924EE7370290B89750E4A7BCF077AEF8D938C",
+        "CRC32": "E144D5CA",
+        "BLAKE3": "76EFDDE9D2D5E81A57B45FB1C071873769A0F65289C3375A1808ADD281C66935",
+        "AutoV3": "860887DAC20A",
+        "SHA256_12": "98ED8DAEDDB5"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/3449955",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/3449955"
+    },
+    {
+     "id": 2512269,
+     "index": 1,
+     "name": "Farrah v2.0 - ZiT",
+     "baseModel": "ZImageTurbo",
+     "baseModelType": "Standard",
+     "publishedAt": "2025-12-20T17:07:55.709Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 7,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 2400169,
+       "sizeKB": 166140.9296875,
+       "name": "Character_Mix_FarrahMixerV2_ZIT.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2025-12-17T15:55:50.122Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": null,
+        "fp": "bf16"
+       },
+       "hashes": {
+        "AutoV1": "C8FB1A5A",
+        "AutoV2": "136B074246",
+        "SHA256": "136B074246B7085E164B86FBAA6DD52D1BC3F9F0FA4FD0BE2561FAE613046A45",
+        "CRC32": "C3A54CAC",
+        "BLAKE3": "236A7CFB154C77E159A750935A4604A8BBE674C40A6112FACC238A27073DD3C4",
+        "AutoV3": "CAA9F045E59E",
+        "SHA256_12": "136B074246B7"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/2512269",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/2512269"
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "nextCursor": "5",
+  "nextPage": "https://civitai.com/api/v1/models?query=tee%20kays%20titty%20time%20a%20queens%20tits%20kr%202&limit=5&nsfw=true&cursor=5"
+ }
+}

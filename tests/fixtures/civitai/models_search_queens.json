@@ -1,0 +1,544 @@
+{
+ "items": [
+  {
+   "id": 927534,
+   "name": "A Queen's Breasts | Ani + MH3 + Kr2 + ZiT + F1D + PNY + ILL",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": true,
+   "allowCommercialUse": [
+    "RentCivit"
+   ],
+   "allowDerivatives": false,
+   "allowDifferentLicense": false,
+   "type": "LORA",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": false,
+   "nsfwLevel": 30,
+   "availability": "Public",
+   "userId": 108336,
+   "hasActivePaidAccess": true,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Anima",
+    "MiniMax H3",
+    "Krea 2",
+    "ZImageTurbo",
+    "Flux.1 D",
+    "Pony",
+    "Illustrious"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 3433633,
+     "index": 0,
+     "name": "Anima v1.3",
+     "baseModel": "Anima",
+     "baseModelType": "Standard",
+     "publishedAt": "2026-11-03T19:58:12.759Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 12,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 3330079,
+       "sizeKB": 135413.9140625,
+       "name": "TeeKaysTittyTime_AQueensTits_V1-3_Ani.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": null,
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2026-10-27T19:51:59.028Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "fp": "bf16",
+        "isRequired": false
+       },
+       "hashes": {
+        "AutoV1": "C5A85A5B",
+        "AutoV2": "0AF19903F8",
+        "SHA256": "0AF19903F8BCAF728B98CEE81B0148A06BFF90F8062898630C4F7C3446E2F9F4",
+        "CRC32": "8C3DBF60",
+        "BLAKE3": "F86AF4C6888AEBF5B300B94CD16FA6498F6EE794D815B85F6CD44225A8C9EEF9",
+        "AutoV3": "190433DEEFB0",
+        "SHA256_12": "0AF19903F8BC"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/3433633",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/3433633"
+    },
+    {
+     "id": 3395453,
+     "index": 1,
+     "name": "MH3 v1.3",
+     "baseModel": "MiniMax H3",
+     "baseModelType": "Standard",
+     "publishedAt": "2026-10-10T19:48:14.997Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 24,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": {
+      "permanent": true,
+      "endsAt": null
+     },
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 3285324,
+       "sizeKB": 302900.46875,
+       "name": "TeeKaysTittyTime_AQueensTits_V1-3_MH3.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": null,
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2026-10-09T23:43:13.810Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "fp": "bf16",
+        "isRequired": false
+       },
+       "hashes": {
+        "AutoV1": "ABDDA747",
+        "AutoV2": "AC374AB760",
+        "SHA256": "AC374AB760675F2DE3E81428B13FE0145C4A329067418F121F0F952D0A841F65",
+        "CRC32": "235F7497",
+        "BLAKE3": "AC55CBAE2E0879BA10049485717A100848B296AB9EC9384A076BC0B745F4CE23",
+        "AutoV3": "6B83E3168336",
+        "SHA256_12": "AC374AB76067"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/3395453",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/3395453"
+    },
+    {
+     "id": 3133173,
+     "index": 2,
+     "name": "Krea2 v1.3",
+     "baseModel": "Krea 2",
+     "baseModelType": "Standard",
+     "publishedAt": "2026-07-22T21:17:13.495Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 12,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 3013850,
+       "sizeKB": 223231.359375,
+       "name": "TeeKaysTittyTime_AQueensTits_V1-3_Kr2.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": null,
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2026-07-15T21:12:55.382Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "fp": "bf16",
+        "isRequired": false
+       },
+       "hashes": {
+        "AutoV1": "C2911984",
+        "AutoV2": "E80A289879",
+        "SHA256": "E80A2898797E35565CF3507A422B44557439E223DFEF6CFDD04E16D09181FED4",
+        "CRC32": "F96E2B5A",
+        "BLAKE3": "DF2FF7BBD5AA584ED0D5B60F15D52918A33B408ECDA1CA0681C4476BB4EE6887",
+        "AutoV3": "2E64716ACBC2",
+        "SHA256_12": "E80A2898797E"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/3133173",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/3133173"
+    }
+   ]
+  },
+  {
+   "id": 906073,
+   "name": "Sophia Glew - A Certain Queen's Bedside Affairs: How a Faithful Wife Became Pregnant",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": true,
+   "allowCommercialUse": [
+    "RentCivit"
+   ],
+   "allowDerivatives": true,
+   "allowDifferentLicense": true,
+   "type": "LORA",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": true,
+   "nsfwLevel": 60,
+   "availability": "Public",
+   "userId": 1698136,
+   "hasActivePaidAccess": false,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Pony"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 1013921,
+     "index": 0,
+     "name": "V1",
+     "baseModel": "Pony",
+     "baseModelType": "Standard",
+     "publishedAt": "2024-11-30T14:51:19.167Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 60,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 1019894,
+       "sizeKB": 223102.76171875,
+       "name": "Sophia_Glew.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2024-11-30T14:46:00.967Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "fp": "bf16"
+       },
+       "hashes": {
+        "AutoV1": "E8EFE8DB",
+        "AutoV2": "2B3DEDE480",
+        "SHA256": "2B3DEDE480A7C11B49CEE1D6913398346468FDAB1BA0BE9C22EA9D3330D5D997",
+        "CRC32": "43A46E1D",
+        "BLAKE3": "9C1302526C3D4B75CAA52C7F1548BADFCCE552B38A87321FC6B353C599F0110A",
+        "AutoV3": "E274B3F78CC5",
+        "SHA256_12": "2B3DEDE480A7"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/1013921",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/1013921"
+    }
+   ]
+  },
+  {
+   "id": 765708,
+   "name": "God Save Queens Collection [Flux]",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": false,
+   "allowCommercialUse": [
+    "Image",
+    "RentCivit",
+    "Rent"
+   ],
+   "allowDerivatives": false,
+   "allowDifferentLicense": true,
+   "type": "LORA",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": false,
+   "nsfwLevel": 6,
+   "availability": "Public",
+   "userId": 59440,
+   "hasActivePaidAccess": false,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Flux.1 D"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 1037708,
+     "index": 0,
+     "name": "Dress",
+     "baseModel": "Flux.1 D",
+     "baseModelType": "Standard",
+     "publishedAt": "2024-11-10T18:05:06.246Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 6,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 943420,
+       "sizeKB": 9217.4765625,
+       "name": "GSQ_Dress_EP10_Flux.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2024-11-07T18:05:43.281Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": null,
+        "fp": null
+       },
+       "hashes": {
+        "AutoV1": "B25E423E",
+        "AutoV2": "378847CC62",
+        "SHA256": "378847CC6243895E9DE89AEEB8197A00F8D930DB99E98EE8EABDBA783CF71ACC",
+        "CRC32": "5BF4C70E",
+        "BLAKE3": "66352E8669FD0B8C107A2BCDD8734EC8024D0E22B03AAE085FCBAD772562C91C",
+        "AutoV3": "3EB435D6E4D1",
+        "SHA256_12": "378847CC6243"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/1037708",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/1037708"
+    },
+    {
+     "id": 856444,
+     "index": 1,
+     "name": "Top & Biker Pants",
+     "baseModel": "Flux.1 D",
+     "baseModelType": "Standard",
+     "publishedAt": "2024-09-19T18:10:06.474Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 4,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 765463,
+       "sizeKB": 9217.4765625,
+       "name": "GSQ_V2.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2024-09-16T18:07:02.473Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": null,
+        "fp": null
+       },
+       "hashes": {
+        "AutoV1": "A3747C5F",
+        "AutoV2": "905032E126",
+        "SHA256": "905032E126985DEEFEDA4685B92CEB645B85E5656DDD842EC35FF4295322E2D2",
+        "CRC32": "12F217CE",
+        "BLAKE3": "25D87B9281E90E859E4D3688C8C0330F1C0A2300780F01E2EC2133D29E56A9E9",
+        "AutoV3": "552B7E3BAE17",
+        "SHA256_12": "905032E12698"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/856444",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/856444"
+    }
+   ]
+  },
+  {
+   "id": 2304363,
+   "name": "Yaha-kui zaShunina x Sigui (Kado x Queen's Blade)",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": true,
+   "allowCommercialUse": [
+    "Image",
+    "RentCivit",
+    "Rent",
+    "Sell",
+    "SellMerge"
+   ],
+   "allowDerivatives": true,
+   "allowDifferentLicense": true,
+   "type": "LORA",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": true,
+   "nsfwLevel": 60,
+   "availability": "Public",
+   "userId": 2525360,
+   "hasActivePaidAccess": false,
+   "hasSfwFace": false,
+   "baseModels": [
+    "SD 1.5"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 2592810,
+     "index": 0,
+     "name": "v1.0",
+     "baseModel": "SD 1.5",
+     "baseModelType": "Standard",
+     "publishedAt": "2026-01-13T04:15:02.487Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 60,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 2480093,
+       "sizeKB": 18550.8984375,
+       "name": "ZaShuninaSigui-10.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2026-01-13T04:18:58.664Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": null,
+        "fp": null
+       },
+       "hashes": {
+        "AutoV1": "DE2F2560",
+        "AutoV2": "8EC4EFD3B3",
+        "SHA256": "8EC4EFD3B38A4BAC70D2D7F0C8C01525105C29A5A4C1BEF8BCD462A4198D718F",
+        "CRC32": "9EF49C98",
+        "BLAKE3": "A2A8618EA58746EA96FCDB0D0276D096C34C727FD50EAE07C04A1CEF8E06C523",
+        "AutoV3": "97DCE574ABDF",
+        "SHA256_12": "8EC4EFD3B38A"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/2592810",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/2592810"
+    }
+   ]
+  },
+  {
+   "id": 825664,
+   "name": "Queen's Blade GameBook Battles and Defeats (CONCEPT) PONY XL | クイーンズブレイド ゲームブック 戦闘敗北ポーズ集（コンセプト）",
+   "coverImageId": null,
+   "sfwCoverImageId": null,
+   "allowNoCredit": true,
+   "allowCommercialUse": [
+    "Image",
+    "RentCivit",
+    "Rent",
+    "Sell",
+    "SellMerge"
+   ],
+   "allowDerivatives": true,
+   "allowDifferentLicense": true,
+   "type": "LORA",
+   "minor": false,
+   "sfwOnly": false,
+   "poi": false,
+   "nsfw": true,
+   "nsfwLevel": 60,
+   "availability": "Public",
+   "userId": 3252245,
+   "hasActivePaidAccess": false,
+   "hasSfwFace": false,
+   "baseModels": [
+    "Pony"
+   ],
+   "cosmetic": null,
+   "eventDecoration": null,
+   "supportsGeneration": true,
+   "modelVersions": [
+    {
+     "id": 923350,
+     "index": 0,
+     "name": "<lora:QB_Battle_V1:1>",
+     "baseModel": "Pony",
+     "baseModelType": "Standard",
+     "publishedAt": "2024-10-05T04:17:47.930Z",
+     "flags": 0,
+     "availability": "Public",
+     "nsfwLevel": 60,
+     "vaeId": null,
+     "coveredNext": true,
+     "paidAccess": null,
+     "supportsGeneration": true,
+     "files": [
+      {
+       "id": 830826,
+       "sizeKB": 111759.43359375,
+       "name": "QB_Battle_PONY_V1.safetensors",
+       "overrideName": null,
+       "type": "Model",
+       "pickleScanResult": "Success",
+       "pickleScanMessage": "No Pickle imports",
+       "virusScanResult": "Success",
+       "virusScanMessage": null,
+       "scannedAt": "2024-10-05T03:11:15.597Z",
+       "metadata": {
+        "format": "SafeTensor",
+        "size": null,
+        "fp": null
+       },
+       "hashes": {
+        "AutoV1": "B45E65E2",
+        "AutoV2": "B6957648F0",
+        "SHA256": "B6957648F014310F5D340576EC2EBA6DB2FAFFE76F1F5CC50E56C7F49C1D0C30",
+        "CRC32": "EE30FE44",
+        "BLAKE3": "D570685F1F03FFDFF7C78B75A79AE0765F3B258EAF14EC4AD5ABA42436DA4E3F",
+        "AutoV3": "9E6246D840B2",
+        "SHA256_12": "B6957648F014"
+       },
+       "downloadUrl": "https://civitai.com/api/download/models/923350",
+       "primary": true
+      }
+     ],
+     "downloadUrl": "https://civitai.com/api/download/models/923350"
+    }
+   ]
+  }
+ ],
+ "metadata": {
+  "nextCursor": "5",
+  "nextPage": "https://civitai.com/api/v1/models?query=a%20queens%20tits&limit=5&nsfw=true&cursor=5"
+ }
+}

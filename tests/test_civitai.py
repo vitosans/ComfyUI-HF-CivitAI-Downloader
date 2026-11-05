@@ -908,5 +908,47 @@ class TestLabelSize(unittest.TestCase):
         self.assertNotEqual(a, b)
 
 
+
+TEEKAYS = "Krea2\\A Queen's Breasts\\TeeKaysTittyTime_AQueensTits_V1-3_Kr2.safetensors"
+
+
+class TestBrandPrefixedNames(unittest.TestCase):
+    """Creator brand first, model name after the first underscore."""
+
+    def test_segment_query_after_brand(self):
+        qs = cd.search_queries(TEEKAYS)
+        self.assertEqual(qs[0], "tee kays titty time a queens tits 3 kr 2")
+        self.assertIn("a queens tits", qs)
+        self.assertLess(qs.index("a queens tits"), qs.index("tee kays titty time"))
+
+    def test_short_segment_not_queried_alone(self):
+        self.assertNotIn("kr 2", cd.search_queries(TEEKAYS))
+
+    def test_no_extra_queries_when_rest_is_noise(self):
+        qs = cd.search_queries("moodyKrea2MixUncensoredV8SEGoes_v80_int8.safetensors")
+        self.assertEqual(qs, ["moody krea 2 mix uncensored v8se goes", "moody krea 2 mix", "moody krea"])
+
+    def test_keeps_searching_until_exact_file_found(self):
+        api = FakeApi([
+            ("query=tee%20kays%20titty%20time%20a%20queens", _fx("models_search_teekays_brand.json")),
+            ("query=a%20queens%20tits", _fx("models_search_queens.json")),
+            ("/api/v1/models?", {"items": []}),
+            ("/api/search", {"results": []}),
+        ])
+        with patch.object(cd, "_get_json", api):
+            result = cd.lookup(TEEKAYS, cd.Budget(), folder="loras/Krea2")
+        exact = result["exact"]
+        self.assertEqual(exact["match"], "exact")
+        self.assertEqual(exact["filename"], "TeeKaysTittyTime_AQueensTits_V1-3_Kr2.safetensors")
+        self.assertEqual(exact["model_type"], "LORA")
+        self.assertTrue(exact["url"].startswith("https://civitai.com/api/download/models/3133173"))
+        self.assertFalse(any("/api/search" in u for u in api.calls))  # no archive call needed
+
+    def test_stops_after_exact_hit(self):
+        api = FakeApi([("/api/v1/models?", _fx("models_search_queens.json"))])
+        with patch.object(cd, "_get_json", api):
+            cd.lookup("TeeKaysTittyTime_AQueensTits_V1-3_Kr2.safetensors", cd.Budget())
+        self.assertEqual(len(api.calls), 1)
+
 if __name__ == "__main__":
     unittest.main()

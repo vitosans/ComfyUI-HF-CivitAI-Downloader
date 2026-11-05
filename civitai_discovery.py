@@ -37,7 +37,8 @@ _FOLDER_TYPES = {
     "upscale_models": {"upscaler"},
 }
 
-_MAX_QUERIES = 3
+_MAX_QUERIES = 4
+_MIN_SEGMENT_LETTERS = 6  # a segment after the brand must carry this many letters/digits to be queried alone
 _MIN_QUERY_CHARS = 5
 _MIN_QUERY_WORDS = 2
 
@@ -57,7 +58,12 @@ def _words(text):
 
 
 def search_queries(filename):
-    """Return up to 3 search strings for ``filename``, most specific first."""
+    """Return up to 4 search strings for ``filename``, most specific first.
+
+    Creators often prefix files with their brand (``TeeKaysTittyTime_AQueensTits``)
+    while the CivitAI model is named after the part behind it, so each meaningful
+    segment after the first ``_`` is also queried on its own.
+    """
     base = re.split(r"[\\/]", filename or "")[-1]
     stem = os.path.splitext(base)[0]
     first, *rest = stem.split("_")
@@ -65,16 +71,21 @@ def search_queries(filename):
     words = []
     for piece in _SEPARATORS.split(first):
         words.extend(_words(piece))
+    segment_queries = []
     for segment in rest:
         if _NOISE_TOKEN.match(segment):
             continue
+        segment_words = []
         for piece in _SEPARATORS.split(segment):
             if piece and not _NOISE_TOKEN.match(piece):
-                words.extend(_words(piece))
+                segment_words.extend(_words(piece))
+        words.extend(segment_words)
+        if len("".join(segment_words)) >= _MIN_SEGMENT_LETTERS:
+            segment_queries.append(" ".join(segment_words))
 
+    candidates = [" ".join(words)] + segment_queries + [" ".join(words[:4]), " ".join(words[:2])]
     queries = []
-    for count in (len(words), 4, 2):
-        query = " ".join(words[:count])
+    for query in candidates:
         if (
             query
             and query not in queries
@@ -321,15 +332,22 @@ def _lookup(wanted, budget, status_cb, folder=None):
 
 def _resolve(wanted, budget, status_cb, state):
     wanted_l = wanted.lower()
+    generic = _is_generic_name(wanted)
+    seen_ids = set()
+    state["items"] = []
     for query in search_queries(wanted):
         url = f"{CIVITAI_API}/api/v1/models?query={urllib.parse.quote(query)}&limit=5&nsfw=true"
-        state["items"] = [i for i in _list(_dict(_fetch(url, budget, status_cb, "civitai_search", True)).get("items"))
-                          if isinstance(i, dict)]
-        if state["items"]:
+        found = [i for i in _list(_dict(_fetch(url, budget, status_cb, "civitai_search", True)).get("items"))
+                 if isinstance(i, dict) and i.get("id") not in seen_ids]
+        seen_ids.update(i.get("id") for i in found)
+        state["items"].extend(found)
+        # A generic name can't be proven by name, so the first hit is enough;
+        # otherwise keep trying the next query until one holds the exact file.
+        if found and (generic or any(c["filename"].lower() == wanted_l
+                                     for c in _search_candidates(found, "exact"))):
             break
 
     pool = _search_candidates(state["items"], "exact")
-    generic = _is_generic_name(wanted)
     if not generic:
         state["exact"] = next((c for c in pool if c["filename"].lower() == wanted_l), None)
         if state["exact"]:
