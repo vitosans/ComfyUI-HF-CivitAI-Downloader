@@ -4386,7 +4386,179 @@ app.registerExtension({
             }, 0);
         };
 
+        let searchPromptPending = false;
+        const ASK_BEFORE_SEARCH_SETTING_ID = "downloader.ask_before_missing_model_search";
+        const getAskBeforeSearchEnabled = () => {
+            const settingsUi = app?.ui?.settings;
+            if (!settingsUi?.getSettingValue) {
+                return true;
+            }
+            return settingsUi.getSettingValue(ASK_BEFORE_SEARCH_SETTING_ID) !== false;
+        };
+
+        // Local-only scan (workflow, curated registry, manager cache): no Hugging Face or CivitAI requests.
+        const quickScanMissingModels = async (options = {}) => {
+            const workflow = serializeWorkflowForModelScan();
+            if (!workflow || typeof workflow !== "object") {
+                return [];
+            }
+            const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+            const timeoutId = controller ? setTimeout(() => controller.abort(), 8000) : null;
+            let missing = [];
+            try {
+                const init = {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        ...workflow,
+                        request_id: `search-prompt-${Date.now()}`,
+                        skip_hf_search: true,
+                    }),
+                    signal: controller?.signal,
+                };
+                const resp = api && typeof api.fetchApi === "function"
+                    ? await api.fetchApi("/check_missing_models", init)
+                    : await fetch("/check_missing_models", init);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    missing = Array.isArray(data?.missing) ? data.missing : [];
+                }
+            } catch (e) {
+                console.warn("[AutoDownload] Quick missing-model scan failed:", e);
+            } finally {
+                if (timeoutId) clearTimeout(timeoutId);
+            }
+            if (!missing.length) {
+                missing = await createRunHookFallbackMissingModelsFromFrontendStore(
+                    Array.isArray(options?.frontendMissingModelCandidates)
+                        ? options.frontendMissingModelCandidates
+                        : null
+                );
+            }
+            if (!missing.length && Array.isArray(options?.runHookFailures)) {
+                missing = options.runHookFailures
+                    .map((item) => String(item?.missingValue || "").trim())
+                    .filter(Boolean)
+                    .map((filename) => ({ filename }));
+            }
+            return coalesceMissingEntriesByDestination(missing);
+        };
+
+        // Resolves "search" or "cancel".
+        const showSearchPromptDialog = (entries) => new Promise((resolve) => {
+            const existing = document.getElementById("auto-download-dialog");
+            if (existing) existing.remove();
+
+            const dlg = document.createElement("div");
+            dlg.id = "auto-download-dialog";
+            applyTemplateDialogOverlayStyle(dlg, 9000);
+
+            const panel = document.createElement("div");
+            applyTemplateDialogPanelStyle(panel, {
+                padding: "20px 22px",
+                textAlign: "left",
+                width: "560px",
+                maxWidth: "92vw",
+                gap: "12px",
+            });
+
+            const title = document.createElement("div");
+            title.textContent = entries.length === 1
+                ? "1 model is missing"
+                : `${entries.length} models are missing`;
+            Object.assign(title.style, { fontSize: "16px", fontWeight: "600" });
+            panel.appendChild(title);
+
+            const hint = document.createElement("div");
+            hint.textContent = "Search Hugging Face and CivitAI for download links? Nothing downloads until you choose files in the next step.";
+            Object.assign(hint.style, { fontSize: "13px", opacity: "0.75" });
+            panel.appendChild(hint);
+
+            const list = document.createElement("ul");
+            Object.assign(list.style, {
+                margin: "0",
+                padding: "8px 12px 8px 28px",
+                maxHeight: "40vh",
+                overflowY: "auto",
+                fontSize: "13px",
+                lineHeight: "1.6",
+                border: `1px solid ${TEMPLATE_DIALOG_TOKENS.border}`,
+                borderRadius: "10px",
+                wordBreak: "break-all",
+            });
+            for (const entry of entries) {
+                const li = document.createElement("li");
+                const name = String(entry?.filename || entry?.name || "").trim() || "(unnamed)";
+                const folder = String(entry?.suggested_folder || entry?.directory || "").trim();
+                li.textContent = folder ? `${name}  (${folder})` : name;
+                if (entry?.url) {
+                    const tag = document.createElement("span");
+                    tag.textContent = " · link known";
+                    tag.style.opacity = "0.6";
+                    li.appendChild(tag);
+                }
+                list.appendChild(li);
+            }
+            panel.appendChild(list);
+
+            const footer = document.createElement("div");
+            Object.assign(footer.style, { display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "4px" });
+
+            let settled = false;
+            const finish = (choice) => {
+                if (settled) return;
+                settled = true;
+                document.removeEventListener("keydown", onKey, true);
+                if (dlg.parentElement) dlg.remove();
+                resolve(choice);
+            };
+            const onKey = (event) => {
+                if (event.key === "Escape") {
+                    event.stopPropagation();
+                    finish("cancel");
+                }
+            };
+            document.addEventListener("keydown", onKey, true);
+
+            const cancelBtn = createButton("Cancel", "", () => finish("cancel"));
+            applyNativeButtonStyle(cancelBtn, "secondary");
+            const searchBtn = createButton("Search", "", () => finish("search"));
+            applyNativeButtonStyle(searchBtn, "primary");
+            footer.appendChild(cancelBtn);
+            footer.appendChild(searchBtn);
+            panel.appendChild(footer);
+
+            bindBackdropClose(dlg, () => finish("cancel"));
+            dlg.appendChild(panel);
+            document.body.appendChild(dlg);
+            searchBtn.focus();
+        });
+
         const runAutoDownload = async (skippedFilenames = new Set(), skipAllUnresolved = false, options = {}) => {
+            // Automatic triggers (workflow open, Run) list the missing models and ask before any remote search.
+            const autoTriggered = Boolean(options?.triggeredByWorkflowOpen || options?.triggeredByRunHook);
+            if (autoTriggered && !skipAllUnresolved && !options?.searchConfirmed && getAskBeforeSearchEnabled()) {
+                if (searchPromptPending) return;
+                searchPromptPending = true;
+                let choice = "cancel";
+                let entries = [];
+                try {
+                    entries = await quickScanMissingModels(options);
+                    if (entries.some((entry) => !entry?.url)) {
+                        choice = await showSearchPromptDialog(entries);
+                    } else {
+                        choice = "no-search-needed";
+                    }
+                } finally {
+                    searchPromptPending = false;
+                }
+                if (choice === "no-search-needed") {
+                    // Every missing model already has a link (or nothing is missing): no remote lookups needed.
+                    return runAutoDownload(skippedFilenames, true, { ...options, searchConfirmed: true });
+                }
+                if (choice !== "search") return;
+                options = { ...options, searchConfirmed: true };
+            }
             let loadingDlg = null;
             let aborted = false;
             let skipRequested = false;

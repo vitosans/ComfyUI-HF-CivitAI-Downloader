@@ -28,6 +28,15 @@ app.registerExtension({
       tooltip: "When a missing model is not found on Hugging Face, also look it up on CivitAI.",
     },
     {
+      id: "downloader.ask_before_missing_model_search",
+      category: ["Hugging Face Download & Backup", "Auto download", "Ask before searching for missing models"],
+      name: "Ask before searching for missing models",
+      type: "boolean",
+      defaultValue: true,
+      tooltip:
+        "When a workflow is opened or Run with missing models, list them first and only search Hugging Face and CivitAI if you click Search.",
+    },
+    {
       id: "downloader.auto_open_missing_models_on_run",
       category: ["Hugging Face Download & Backup", "Auto download", "Auto-open on workflow-open and Run missing-model checks"],
       name: "Auto-open on workflow-open and Run missing-model checks",

@@ -62,6 +62,10 @@ ComfyUI node pack and UI tools for:
 - Handles custom node snapshots with `comfy-cli` (`custom_nodes_snapshot.yaml`).
 - Strips `downloader.hf_token` and `downloader.civitai_token` from backed-up settings and preserves the local tokens on restore.
 
+#### Ask before searching
+
+When a workflow is opened or Run with missing models, a dialog lists them first (local check only: workflow links, curated registry, Manager cache). Hugging Face and CivitAI are searched only after you click **Search**; **Cancel** (or Esc) closes it with no lookups. If every missing model already has a link, the download list opens directly. The manual Auto-download button still searches right away. Turn this off with `downloader.ask_before_missing_model_search`.
+
 #### CivitAI lookup
 
 After the Hugging Face search, models still missing are looked up on CivitAI (civitai.com API; civitai.green/.red share it) by the words in the filename (and by each part after the first `_`, since creators often put their brand first; it keeps searching until one result holds the exact file), then on civitaiarchive.com by old filename, then sha256, then CivitAI by-hash, then archive mirrors.
@@ -106,6 +110,7 @@ Configured in ComfyUI settings:
 - `downloader.auto_open_missing_models_on_run` (after Run, auto-opens downloader only when native ComfyUI missing-models dialog appears)
 - `downloader.civitai_token` (CivitAI API key; falls back to env `CIVITAI_API_TOKEN`, then ComfyUI-Lora-Manager's saved key)
 - `downloader.civitai_search_enabled` (CivitAI lookup for missing models, default on)
+- `downloader.ask_before_missing_model_search` (list missing models and ask before searching on workflow open/Run, default on)
 - `downloaderbackup.repo_name` (target HF repo for backup/restore)
 - `downloaderbackup.file_size_limit` (max single file size in GB for backup)
 
