@@ -17,8 +17,3 @@ Upstream = "https://github.com/jnxmx/ComfyUI_HuggingFace_Downloader"
 PublisherId = "vitosans"
 DisplayName = "HF + CivitAI Downloader"
 Icon = ""
-
-[tool.pytest.ini_options]
-# The folder name has a hyphen, so the repo root cannot be imported as a package; tests/conftest.py aliases it.
-addopts = "--import-mode=importlib"
-testpaths = ["tests"]
