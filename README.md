@@ -64,7 +64,7 @@ ComfyUI node pack and UI tools for:
 
 #### Ask before searching
 
-When a workflow is opened or Run with missing models, a dialog lists them first (local check only: workflow links, curated registry, Manager cache). Hugging Face and CivitAI are searched only after you click **Search**; **Cancel** (or Esc) closes it with no lookups. If every missing model already has a link, the download list opens directly. The manual Auto-download button still searches right away. Turn this off with `downloader.ask_before_missing_model_search`.
+When a workflow is opened or Run with missing models, a dialog lists them first (local check only: workflow links, curated registry, Manager cache). Every model is ticked; untick the ones you already have and they are neither searched nor offered for download. Hugging Face and CivitAI are searched only after you click **Search**; **Cancel** (or Esc) closes it with no lookups. If every missing model already has a link, the download list opens directly. The manual Auto-download button still searches right away. Turn this off with `downloader.ask_before_missing_model_search`.
 
 #### CivitAI lookup
 

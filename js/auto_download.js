@@ -4444,7 +4444,7 @@ app.registerExtension({
             return coalesceMissingEntriesByDestination(missing);
         };
 
-        // Resolves "search" or "cancel".
+        // Resolves { choice: "search" | "cancel", excluded: Set of lower-cased unticked filenames }.
         const showSearchPromptDialog = (entries) => new Promise((resolve) => {
             const existing = document.getElementById("auto-download-dialog");
             if (existing) existing.remove();
@@ -4470,7 +4470,7 @@ app.registerExtension({
             panel.appendChild(title);
 
             const hint = document.createElement("div");
-            hint.textContent = "Search Hugging Face and CivitAI for download links? Nothing downloads until you choose files in the next step.";
+            hint.textContent = "Untick any you already have. The rest are searched on Hugging Face and CivitAI; nothing downloads until you choose files in the next step.";
             Object.assign(hint.style, { fontSize: "13px", opacity: "0.75" });
             panel.appendChild(hint);
 
@@ -4486,18 +4486,34 @@ app.registerExtension({
                 borderRadius: "10px",
                 wordBreak: "break-all",
             });
+            list.style.listStyle = "none";
+            list.style.paddingLeft = "12px";
+            const checkboxes = [];
             for (const entry of entries) {
                 const li = document.createElement("li");
-                const name = String(entry?.filename || entry?.name || "").trim() || "(unnamed)";
+                const label = document.createElement("label");
+                Object.assign(label.style, { display: "flex", gap: "8px", alignItems: "flex-start", cursor: "pointer" });
+                const box = document.createElement("input");
+                box.type = "checkbox";
+                box.checked = true;
+                box.style.marginTop = "4px";
+                box.dataset.filename = String(entry?.filename || entry?.name || "").trim();
+                const name = box.dataset.filename || "(unnamed)";
                 const folder = String(entry?.suggested_folder || entry?.directory || "").trim();
-                li.textContent = folder ? `${name}  (${folder})` : name;
+                const text = document.createElement("span");
+                text.textContent = folder ? `${name}  (${folder})` : name;
                 if (entry?.url) {
                     const tag = document.createElement("span");
                     tag.textContent = " · link known";
                     tag.style.opacity = "0.6";
-                    li.appendChild(tag);
+                    text.appendChild(tag);
                 }
+                box.addEventListener("change", () => updateSearchButton());
+                label.appendChild(box);
+                label.appendChild(text);
+                li.appendChild(label);
                 list.appendChild(li);
+                checkboxes.push(box);
             }
             panel.appendChild(list);
 
@@ -4510,7 +4526,12 @@ app.registerExtension({
                 settled = true;
                 document.removeEventListener("keydown", onKey, true);
                 if (dlg.parentElement) dlg.remove();
-                resolve(choice);
+                const excluded = new Set(
+                    checkboxes
+                        .filter((box) => !box.checked && box.dataset.filename)
+                        .map((box) => box.dataset.filename.toLowerCase())
+                );
+                resolve({ choice, excluded });
             };
             const onKey = (event) => {
                 if (event.key === "Escape") {
@@ -4524,6 +4545,13 @@ app.registerExtension({
             applyNativeButtonStyle(cancelBtn, "secondary");
             const searchBtn = createButton("Search", "", () => finish("search"));
             applyNativeButtonStyle(searchBtn, "primary");
+            const updateSearchButton = () => {
+                const selected = checkboxes.filter((box) => box.checked).length;
+                searchBtn.disabled = selected === 0;
+                searchBtn.style.opacity = selected === 0 ? "0.5" : "1";
+                searchBtn.style.cursor = selected === 0 ? "default" : "pointer";
+                searchBtn.textContent = selected === checkboxes.length ? "Search" : `Search (${selected})`;
+            };
             footer.appendChild(cancelBtn);
             footer.appendChild(searchBtn);
             panel.appendChild(footer);
@@ -4541,11 +4569,12 @@ app.registerExtension({
                 if (searchPromptPending) return;
                 searchPromptPending = true;
                 let choice = "cancel";
+                let excluded = new Set();
                 let entries = [];
                 try {
                     entries = await quickScanMissingModels(options);
                     if (entries.some((entry) => !entry?.url)) {
-                        choice = await showSearchPromptDialog(entries);
+                        ({ choice, excluded } = await showSearchPromptDialog(entries));
                     } else {
                         choice = "no-search-needed";
                     }
@@ -4557,8 +4586,22 @@ app.registerExtension({
                     return runAutoDownload(skippedFilenames, true, { ...options, searchConfirmed: true });
                 }
                 if (choice !== "search") return;
-                options = { ...options, searchConfirmed: true };
+                // Unticked models are neither searched nor offered for download.
+                skippedFilenames = new Set([...skippedFilenames, ...excluded]);
+                options = { ...options, searchConfirmed: true, excludedFilenames: excluded };
             }
+            const dropExcludedEntries = (data) => {
+                const excluded = options?.excludedFilenames;
+                if (!(excluded instanceof Set) || !excluded.size || !data || typeof data !== "object") {
+                    return data;
+                }
+                const keep = (item) => !excluded.has(String(item?.filename || item?.name || "").trim().toLowerCase());
+                const filtered = { ...data };
+                for (const key of ["missing", "mismatches", "path_mismatches"]) {
+                    if (Array.isArray(data[key])) filtered[key] = data[key].filter(keep);
+                }
+                return filtered;
+            };
             let loadingDlg = null;
             let aborted = false;
             let skipRequested = false;
@@ -4755,7 +4798,7 @@ app.registerExtension({
                         "[AutoDownload] Using frontend missing-model store fast path:",
                         frontendStoreFallbackMissing
                     );
-                    showResultsDialog(
+                    const fastPathData = dropExcludedEntries(
                         enrichedFastPathResults && countActionableScanResults(enrichedFastPathResults)
                             ? enrichedFastPathResults
                             : {
@@ -4763,9 +4806,13 @@ app.registerExtension({
                                 missing: frontendStoreFallbackMissing,
                                 found: [],
                                 mismatches: []
-                            },
-                        options || {}
+                            }
                     );
+                    if (Boolean(options?.suppressEmptyResults) && countDownloadRequiredScanResults(fastPathData) <= 0) {
+                        resumeRunIfPossible();
+                        return;
+                    }
+                    showResultsDialog(fastPathData, options || {});
                     return;
                 }
 
@@ -4806,7 +4853,7 @@ app.registerExtension({
                     }
                     throw new Error("Failed to scan models: " + detail + " (" + resp.status + ")");
                 }
-                const data = await resp.json();
+                let data = await resp.json();
                 if (aborted || data?.cancelled || data?.status === "cancelled") {
                     return;
                 }
@@ -4910,6 +4957,7 @@ app.registerExtension({
                 data.missing = coalesceMissingEntriesByDestination(
                     Array.isArray(data?.missing) ? data.missing : []
                 );
+                data = dropExcludedEntries(data);
                 if (Boolean(options?.suppressEmptyResults) && countDownloadRequiredScanResults(data) <= 0) {
                     if (Array.isArray(options?.frontendMissingModelCandidates) && options.frontendMissingModelCandidates.length) {
                         void applyResolvedFrontendMissingModelState(
