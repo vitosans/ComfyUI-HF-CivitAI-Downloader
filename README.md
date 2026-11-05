@@ -1,4 +1,14 @@
-# Hugging Face Download & Backup
+# ComfyUI-HF-CivitAI-Downloader
+
+A fork of [jnxmx/ComfyUI_HuggingFace_Downloader](https://github.com/jnxmx/ComfyUI_HuggingFace_Downloader)
+("Hugging Face Download & Backup") by **jnxmx**, who wrote the downloader, the missing-model scan, Model Explorer
+and the backup tools. Full credit to them; this fork only adds:
+
+- CivitAI and civitaiarchive.com lookup for models Hugging Face doesn't have (exact, sha256-renamed and family matches)
+- a prompt that lists missing models on workflow open/Run, lets you untick ones you already have, and only searches after you click **Search**
+- sha256 checks on downloads, and the CivitAI key kept out of backups
+
+Upstream releases are merged in regularly. Report bugs in the original features upstream.
 
 ComfyUI node pack and UI tools for:
 

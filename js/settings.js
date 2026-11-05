@@ -5,7 +5,7 @@ app.registerExtension({
   settings: [
     {
       id: "downloader.hf_token",
-      category: ["Hugging Face Download & Backup", "Tokens", "Hugging Face Token"],
+      category: ["HF + CivitAI Downloader", "Tokens", "Hugging Face Token"],
       name: "Hugging Face Token",
       type: "text",
       defaultValue: "",
@@ -13,7 +13,7 @@ app.registerExtension({
     },
     {
       id: "downloader.civitai_token",
-      category: ["Hugging Face Download & Backup", "Tokens", "CivitAI API key"],
+      category: ["HF + CivitAI Downloader", "Tokens", "CivitAI API key"],
       name: "CivitAI API key",
       type: "text",
       defaultValue: "",
@@ -21,7 +21,7 @@ app.registerExtension({
     },
     {
       id: "downloader.civitai_search_enabled",
-      category: ["Hugging Face Download & Backup", "Auto download", "Search CivitAI for missing models"],
+      category: ["HF + CivitAI Downloader", "Auto download", "Search CivitAI for missing models"],
       name: "Search CivitAI for missing models",
       type: "boolean",
       defaultValue: true,
@@ -29,7 +29,7 @@ app.registerExtension({
     },
     {
       id: "downloader.ask_before_missing_model_search",
-      category: ["Hugging Face Download & Backup", "Auto download", "Ask before searching for missing models"],
+      category: ["HF + CivitAI Downloader", "Auto download", "Ask before searching for missing models"],
       name: "Ask before searching for missing models",
       type: "boolean",
       defaultValue: true,
@@ -38,7 +38,7 @@ app.registerExtension({
     },
     {
       id: "downloader.auto_open_missing_models_on_run",
-      category: ["Hugging Face Download & Backup", "Auto download", "Auto-open on workflow-open and Run missing-model checks"],
+      category: ["HF + CivitAI Downloader", "Auto download", "Auto-open on workflow-open and Run missing-model checks"],
       name: "Auto-open on workflow-open and Run missing-model checks",
       type: "boolean",
       defaultValue: true,
@@ -50,7 +50,7 @@ app.registerExtension({
     },
     {
       id: "downloader.disable_missing_model_red_frames",
-      category: ["Hugging Face Download & Backup", "Appearance", "Disable missing models red frames"],
+      category: ["HF + CivitAI Downloader", "Appearance", "Disable missing models red frames"],
       name: "Disable missing models red frames",
       type: "boolean",
       defaultValue: false,
@@ -58,7 +58,7 @@ app.registerExtension({
     },
     {
       id: "downloader.top_menu_button_style",
-      category: ["Hugging Face Download & Backup", "Appearance", "Top menu button"],
+      category: ["HF + CivitAI Downloader", "Appearance", "Top menu button"],
       name: "Top menu button",
       type: "combo",
       defaultValue: "default",
@@ -71,7 +71,7 @@ app.registerExtension({
     },
     {
       id: "downloaderbackup.repo_name",
-      category: ["Hugging Face Download & Backup", "Backup", "Hugging Face Repo for Backup"],
+      category: ["HF + CivitAI Downloader", "Backup", "Hugging Face Repo for Backup"],
       name: "Hugging Face Repo for Backup",
       type: "text",
       defaultValue: "",
@@ -82,7 +82,7 @@ app.registerExtension({
     },
     {
       id: "downloaderbackup.file_size_limit",
-      category: ["Hugging Face Download & Backup", "Backup", "Limit Individual File Size"],
+      category: ["HF + CivitAI Downloader", "Backup", "Limit Individual File Size"],
       name: "Limit Individual File Size (GB)",
       type: "number",
       defaultValue: 5,

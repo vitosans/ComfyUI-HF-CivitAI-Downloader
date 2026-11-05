@@ -790,13 +790,13 @@ def run_download(parsed_data: dict,
 
 CIVITAI_AUTH_MESSAGE = (
     "CivitAI needs an API key for this file \u2014 add it in Settings \u2192 "
-    "Hugging Face Download & Backup \u2192 CivitAI API key"
+    "HF + CivitAI Downloader \u2192 CivitAI API key"
 )
 
 
 CIVITAI_KEY_REJECTED_MESSAGE = (
     "CivitAI rejected your API key for this file \u2014 check it in Settings \u2192 "
-    "Hugging Face Download & Backup \u2192 CivitAI API key"
+    "HF + CivitAI Downloader \u2192 CivitAI API key"
 )
 
 
