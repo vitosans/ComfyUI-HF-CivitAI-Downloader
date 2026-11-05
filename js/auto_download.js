@@ -5004,7 +5004,7 @@ app.registerExtension({
                                 mismatches: []
                             }
                     );
-                    if (Boolean(options?.suppressEmptyResults) && countDownloadRequiredScanResults(fastPathData) <= 0) {
+                    if (options?.excludedFilenames?.size && Boolean(options?.suppressEmptyResults) && countDownloadRequiredScanResults(fastPathData) <= 0) {
                         resumeRunIfPossible();
                         return;
                     }
